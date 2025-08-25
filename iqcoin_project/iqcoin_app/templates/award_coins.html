@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block title %}Award Coins - IQ-Coin Tracker{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3>Award IQ-Coins</h3>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.amount.id_for_label }}" class="form-label">
+                            {{ form.amount.label }}
+                        </label>
+                        {{ form.amount }}
+                        {% if form.amount.errors %}
+                            <div class="text-danger">{{ form.amount.errors }}</div>
+                        {% endif %}
+                        <div class="form-text">Award 1-3 IQ-coins to selected students.</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Select Students</label>
+                        <div class="row">
+                            {% for choice in form.students %}
+                                <div class="col-md-6 col-lg-4">
+                                    <div class="form-check">
+                                        {{ choice.tag }}
+                                        <label class="form-check-label" for="{{ choice.id_for_label }}">
+                                            {{ choice.choice_label }}
+                                        </label>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        {% if form.students.errors %}
+                            <div class="text-danger">{{ form.students.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'home' %}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-success">Award Coins</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Add Bootstrap classes to form elements
+document.addEventListener('DOMContentLoaded', function() {
+    const selectElements = document.querySelectorAll('select');
+    selectElements.forEach(function(select) {
+        select.classList.add('form-select');
+    });
+    
+    const inputElements = document.querySelectorAll('input[type="number"]');
+    inputElements.forEach(function(input) {
+        input.classList.add('form-control');
+    });
+    
+    const checkboxElements = document.querySelectorAll('input[type="checkbox"]');
+    checkboxElements.forEach(function(checkbox) {
+        checkbox.classList.add('form-check-input');
+    });
+});
+</script>
+{% endblock %}

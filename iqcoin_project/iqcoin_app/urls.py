@@ -1,0 +1,13 @@
+from django.urls import path
+from django.contrib.auth.views import LogoutView
+from . import views
+
+urlpatterns = [
+    path('', views.home, name='home'),
+    path('login/', views.user_login, name='login'),
+    path('logout/', LogoutView.as_view(), name='logout'),
+    path('award-coins/', views.award_coins, name='award_coins'),
+    path('deduct-coins/', views.deduct_coins, name='deduct_coins'),
+    path('transaction-history/', views.transaction_history, name='transaction_history'),
+    path('edit-transaction/<int:transaction_id>/', views.edit_transaction, name='edit_transaction'),
+]

@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - IQ-Coin Tracker{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h2>Student Balances</h2>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Group</th>
+                        <th>Balance</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in students %}
+                    <tr>
+                        <td>{{ student.name }}</td>
+                        <td>{{ student.group.group }}</td>
+                        <td>
+                            <span class="badge bg-primary">{{ student.balance }} IQ-coins</span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" class="text-center">No students found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <h3>Quick Actions</h3>
+        <div class="d-grid gap-2">
+            <a href="{% url 'award_coins' %}" class="btn btn-success">Award Coins</a>
+            <a href="{% url 'deduct_coins' %}" class="btn btn-warning">Deduct Coins</a>
+            <a href="{% url 'transaction_history' %}" class="btn btn-info">View History</a>
+        </div>
+        
+        <h4 class="mt-4">Recent Transactions</h4>
+        <div class="list-group">
+            {% for transaction in recent_transactions %}
+            <div class="list-group-item {% if transaction.edited %}edited-transaction{% endif %}">
+                <div class="d-flex w-100 justify-content-between">
+                    <h6 class="mb-1">
+                        <span class="transaction-{{ transaction.type|lower }}">
+                            {% if transaction.type == 'AWARD' %}+{% else %}-{% endif %}{{ transaction.amount }}
+                        </span>
+                        {{ transaction.student.name }}
+                    </h6>
+                    <small>{{ transaction.date|date:"M d, H:i" }}</small>
+                </div>
+                <p class="mb-1">By {{ transaction.teacher.username }}</p>
+                {% if transaction.edited %}
+                <small class="text-muted">Edited</small>
+                {% endif %}
+            </div>
+            {% empty %}
+            <div class="list-group-item">
+                <p class="mb-1">No recent transactions.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

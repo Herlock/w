@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+{% block title %}Transaction History - IQ-Coin Tracker{% endblock %}
+
+{% block content %}
+<h2>Transaction History</h2>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title">Filters</h5>
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label for="student" class="form-label">Student</label>
+                <select name="student" id="student" class="form-select">
+                    <option value="">All Students</option>
+                    {% for student in students %}
+                        <option value="{{ student.id }}" {% if current_student == student.id|stringformat:"s" %}selected{% endif %}>
+                            {{ student.name }} ({{ student.group }})
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="col-md-3">
+                <label for="type" class="form-label">Transaction Type</label>
+                <select name="type" id="type" class="form-select">
+                    <option value="">All Types</option>
+                    <option value="AWARD" {% if current_type == "AWARD" %}selected{% endif %}>Awards</option>
+                    <option value="DEDUCT" {% if current_type == "DEDUCT" %}selected{% endif %}>Deductions</option>
+                </select>
+            </div>
+            
+            <div class="col-md-4">
+                <label for="search" class="form-label">Search</label>
+                <input type="text" name="search" id="search" class="form-control" 
+                       value="{{ search_query }}" placeholder="Search by student, teacher, or comment...">
+            </div>
+            
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">Filter</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Transactions Table -->
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Student</th>
+                <th>Amount</th>
+                <th>Teacher</th>
+                <th>Comment</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for transaction in transactions %}
+            <tr {% if transaction.edited %}class="edited-transaction"{% endif %}>
+                <td>{{ transaction.date|date:"M d, Y H:i" }}</td>
+                <td>
+                    <span class="badge bg-{% if transaction.type == 'AWARD' %}success{% else %}warning{% endif %}">
+                        {{ transaction.get_type_display }}
+                    </span>
+                </td>
+                <td>{{ transaction.student.name }} ({{ transaction.student.group.group }})</td>
+                <td>
+                    <span class="transaction-{{ transaction.type|lower }}">
+                        {% if transaction.type == 'AWARD' %}+{% else %}-{% endif %}{{ transaction.amount }}
+                    </span>
+                </td>
+                <td>{{ transaction.teacher.username }}</td>
+                <td>
+                    {% if transaction.comment %}
+                        {{ transaction.comment|truncatechars:50 }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td>
+                    {% if transaction.type == 'AWARD' %}
+                        <a href="{% url 'edit_transaction' transaction.id %}" class="btn btn-sm btn-outline-primary">
+                            Edit
+                        </a>
+                    {% endif %}
+                    {% if transaction.edited %}
+                        <span class="badge bg-secondary">Edited</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="text-center">No transactions found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="mt-3">
+    <a href="{% url 'home' %}" class="btn btn-secondary">Back to Home</a>
+</div>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Transaction - IQ-Coin Tracker{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3>Edit Transaction</h3>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <strong>Transaction Details:</strong><br>
+                    Student: {{ transaction.student.name }}<br>
+                    Original Amount: {{ transaction.amount }} IQ-coins<br>
+                    Date: {{ transaction.date|date:"M d, Y H:i" }}<br>
+                    Teacher: {{ transaction.teacher.username }}
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.amount.id_for_label }}" class="form-label">
+                            New Amount (1-3 IQ-coins)
+                        </label>
+                        {{ form.amount }}
+                        {% if form.amount.errors %}
+                            <div class="text-danger">{{ form.amount.errors }}</div>
+                        {% endif %}
+                        <div class="form-text">
+                            Current amount: {{ transaction.amount }} IQ-coins. 
+                            Student's balance will be automatically adjusted.
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'transaction_history' %}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Update Transaction</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Add Bootstrap classes to form elements
+document.addEventListener('DOMContentLoaded', function() {
+    const inputElements = document.querySelectorAll('input[type="number"]');
+    inputElements.forEach(function(input) {
+        input.classList.add('form-control');
+    });
+});
+</script>
+{% endblock %}
