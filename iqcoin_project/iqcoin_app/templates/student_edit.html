@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit {{ student.name }} - IQ-Coin Tracker{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Edit Student: {{ student.name }}</h4>
+                <a href="{% url 'student_detail' student.id %}" class="btn btn-outline-secondary btn-sm">
+                    View Profile
+                </a>
+            </div>
+            <div class="card-body">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.name.id_for_label }}" class="form-label">
+                            {{ form.name.label }}
+                        </label>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                            <div class="text-danger">
+                                {{ form.name.errors }}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">
+                            Update the student's full name.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.balance.id_for_label }}" class="form-label">
+                            {{ form.balance.label }}
+                        </label>
+                        <div class="input-group">
+                            {{ form.balance }}
+                            <span class="input-group-text">IQ-coins</span>
+                        </div>
+                        {% if form.balance.errors %}
+                            <div class="text-danger">
+                                {{ form.balance.errors }}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">
+                            Current balance: <strong>{{ student.balance }} IQ-coins</strong>. 
+                            Changing this will create a transaction record.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h6 class="card-title">Student Information</h6>
+                                <p class="card-text mb-1">
+                                    <strong>Class:</strong> {{ student.group.group }}
+                                </p>
+                                <p class="card-text mb-1">
+                                    <strong>Teacher:</strong> {{ student.group.teacher.username }}
+                                </p>
+                                <p class="card-text mb-0">
+                                    <strong>Current Balance:</strong> 
+                                    <span class="badge bg-{% if student.balance > 0 %}primary{% elif student.balance == 0 %}secondary{% else %}danger{% endif %}">
+                                        {{ student.balance }} IQ-coins
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if student.balance != form.initial.balance %}
+                        <div class="alert alert-warning">
+                            <strong>Balance Change Detected:</strong> 
+                            A transaction record will be created to track this manual balance adjustment.
+                        </div>
+                    {% endif %}
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'student_detail' student.id %}" class="btn btn-secondary">
+                            Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0">Quick Actions</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2 d-md-flex">
+                    <a href="{% url 'deduct_coins' %}?student={{ student.id }}" class="btn btn-warning btn-sm">
+                        Deduct Coins
+                    </a>
+                    <a href="{% url 'transaction_history' %}?student={{ student.id }}" class="btn btn-info btn-sm">
+                        View Transaction History
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const balanceField = document.getElementById('{{ form.balance.id_for_label }}');
+    const originalBalance = {{ student.balance }};
+    
+    if (balanceField) {
+        balanceField.addEventListener('input', function() {
+            const newBalance = parseInt(this.value) || 0;
+            const difference = newBalance - originalBalance;
+            
+            // Show balance change indicator
+            let indicator = document.getElementById('balance-change-indicator');
+            if (!indicator) {
+                indicator = document.createElement('div');
+                indicator.id = 'balance-change-indicator';
+                indicator.className = 'mt-2';
+                balanceField.parentNode.appendChild(indicator);
+            }
+            
+            if (difference !== 0) {
+                const changeType = difference > 0 ? 'increase' : 'decrease';
+                const changeClass = difference > 0 ? 'text-success' : 'text-danger';
+                const changeSymbol = difference > 0 ? '+' : '';
+                
+                indicator.innerHTML = `<small class="${changeClass}">
+                    <strong>Change:</strong> ${changeSymbol}${difference} IQ-coins 
+                    (${changeType} from ${originalBalance} to ${newBalance})
+                </small>`;
+            } else {
+                indicator.innerHTML = '';
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

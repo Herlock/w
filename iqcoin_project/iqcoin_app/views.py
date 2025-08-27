@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.db.models import Q
 from django.db import transaction as db_transaction
 from .models import Student, Class, Transaction
-from .forms import AwardCoinsForm, DeductCoinsForm, EditTransactionForm
+from .forms import AwardCoinsForm, DeductCoinsForm, EditTransactionForm, StudentForm, StudentEditForm
 
 def user_login(request):
     if request.method == 'POST':
@@ -155,3 +155,82 @@ def edit_transaction(request, transaction_id):
         form = EditTransactionForm(instance=trans)
     
     return render(request, 'edit_transaction.html', {'form': form, 'transaction': trans})
+
+@login_required
+def student_list(request):
+    # Filter students by classes taught by the current teacher
+    students = Student.objects.filter(group__teacher=request.user).order_by('group', 'name')
+    
+    # Get search query
+    search_query = request.GET.get('search')
+    if search_query:
+        students = students.filter(
+            Q(name__icontains=search_query) |
+            Q(group__group__icontains=search_query)
+        )
+    
+    context = {
+        'students': students,
+        'search_query': search_query,
+    }
+    return render(request, 'student_list.html', context)
+
+@login_required
+def student_detail(request, student_id):
+    student = get_object_or_404(Student, id=student_id, group__teacher=request.user)
+    
+    # Get recent transactions for this student
+    recent_transactions = Transaction.objects.filter(student=student).order_by('-date')[:10]
+    
+    context = {
+        'student': student,
+        'recent_transactions': recent_transactions,
+    }
+    return render(request, 'student_detail.html', context)
+
+@login_required
+def student_create(request):
+    if request.method == 'POST':
+        form = StudentForm(request.POST, user=request.user)
+        if form.is_valid():
+            student = form.save()
+            messages.success(request, f'Student "{student.name}" has been created successfully.')
+            return redirect('student_list')
+    else:
+        form = StudentForm(user=request.user)
+    
+    return render(request, 'student_create.html', {'form': form})
+
+@login_required
+def student_edit(request, student_id):
+    student = get_object_or_404(Student, id=student_id, group__teacher=request.user)
+    
+    if request.method == 'POST':
+        form = StudentEditForm(request.POST, instance=student)
+        if form.is_valid():
+            old_balance = student.balance
+            updated_student = form.save()
+            new_balance = updated_student.balance
+            
+            # If balance was changed, create a transaction record
+            if old_balance != new_balance:
+                balance_difference = new_balance - old_balance
+                transaction_type = 'AWARD' if balance_difference > 0 else 'DEDUCT'
+                Transaction.objects.create(
+                    type=transaction_type,
+                    amount=abs(balance_difference),
+                    student=updated_student,
+                    teacher=request.user,
+                    comment=f'Balance manually adjusted from {old_balance} to {new_balance}'
+                )
+            
+            messages.success(request, f'Student "{updated_student.name}" has been updated successfully.')
+            return redirect('student_detail', student_id=updated_student.id)
+    else:
+        form = StudentEditForm(instance=student)
+    
+    context = {
+        'form': form,
+        'student': student,
+    }
+    return render(request, 'student_edit.html', context)

@@ -17,3 +17,32 @@ class EditTransactionForm(forms.ModelForm):
         widgets = {
             'amount': forms.NumberInput(attrs={'min': 1, 'max': 3}),
         }
+
+class StudentForm(forms.ModelForm):
+    class Meta:
+        model = Student
+        fields = ['name', 'group']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter student name'}),
+            'group': forms.Select(attrs={'class': 'form-control'}),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        if user:
+            # Only show classes that belong to the current teacher
+            self.fields['group'].queryset = Class.objects.filter(teacher=user)
+
+class StudentEditForm(forms.ModelForm):
+    class Meta:
+        model = Student
+        fields = ['name', 'balance']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter student name'}),
+            'balance': forms.NumberInput(attrs={'class': 'form-control', 'min': 0}),
+        }
+        labels = {
+            'name': 'Student Name',
+            'balance': 'IQ-coin Balance',
+        }
