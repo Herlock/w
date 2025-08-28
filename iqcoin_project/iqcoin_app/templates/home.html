@@ -17,8 +17,12 @@
                 </thead>
                 <tbody>
                     {% for student in students %}
-                    <tr>
-                        <td>{{ student.name }}</td>
+                    <tr class="clickable-row" style="cursor: pointer;" onclick="window.location='{% url 'student_detail' student.id %}'">
+                        <td>
+                            <a href="{% url 'student_detail' student.id %}" class="text-decoration-none">
+                                {{ student.name }}
+                            </a>
+                        </td>
                         <td>{{ student.group.group }}</td>
                         <td>
                             <span class="badge bg-primary">{{ student.balance }} Айкьюшек</span>
@@ -68,4 +72,23 @@
         </div>
     </div>
 </div>
+
+<style>
+.clickable-row:hover {
+    background-color: #f8f9fa;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
+}
+
+.clickable-row a {
+    color: inherit;
+    font-weight: 500;
+}
+
+.clickable-row a:hover {
+    color: #0066cc;
+    text-decoration: underline !important;
+}
+</style>
 {% endblock %}

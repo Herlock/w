@@ -1,0 +1,178 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ student.name }} - IQ-Coin Tracker{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <!-- Student Information Card -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">{{ student.name }}</h4>
+                <div class="btn-group" role="group">
+                    <a href="{% url 'student_edit' student.id %}" class="btn btn-warning btn-sm">
+                        Edit Student
+                    </a>
+                    <a href="{% url 'student_list' %}" class="btn btn-secondary btn-sm">
+                        Back to List
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-4">Name:</dt>
+                            <dd class="col-sm-8">{{ student.name }}</dd>
+                            
+                            <dt class="col-sm-4">Class:</dt>
+                            <dd class="col-sm-8">
+                                <span class="badge bg-secondary">{{ student.group.group }}</span>
+                            </dd>
+                            
+                            <dt class="col-sm-4">Teacher:</dt>
+                            <dd class="col-sm-8">{{ student.group.teacher.username }}</dd>
+                        </dl>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="text-center">
+                            <h2 class="display-4 mb-2">
+                                <span class="badge bg-{% if student.balance > 0 %}primary{% elif student.balance == 0 %}secondary{% else %}danger{% endif %}">
+                                    {{ student.balance }}
+                                </span>
+                            </h2>
+                            <p class="text-muted">IQ-coin Balance</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Transactions -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Recent Transactions</h5>
+                <a href="{% url 'transaction_history' %}?student={{ student.id }}" class="btn btn-outline-primary btn-sm">
+                    View All
+                </a>
+            </div>
+            <div class="card-body">
+                {% if recent_transactions %}
+                    <div class="list-group list-group-flush">
+                        {% for transaction in recent_transactions %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center {% if transaction.edited %}edited-transaction{% endif %}">
+                            <div>
+                                <h6 class="mb-1">
+                                    <span class="transaction-{{ transaction.type|lower }}">
+                                        {% if transaction.type == 'AWARD' %}
+                                            <i class="bi bi-plus-circle"></i> +{{ transaction.amount }}
+                                        {% else %}
+                                            <i class="bi bi-dash-circle"></i> -{{ transaction.amount }}
+                                        {% endif %}
+                                    </span>
+                                    IQ-coins
+                                </h6>
+                                <p class="mb-1">
+                                    <small class="text-muted">
+                                        by {{ transaction.teacher.username }} on {{ transaction.date|date:"M d, Y H:i" }}
+                                    </small>
+                                </p>
+                                {% if transaction.comment %}
+                                    <p class="mb-0">
+                                        <small class="text-muted">{{ transaction.comment }}</small>
+                                    </p>
+                                {% endif %}
+                                {% if transaction.edited %}
+                                    <small class="badge bg-warning text-dark">Edited</small>
+                                {% endif %}
+                            </div>
+                            {% if transaction.type == 'AWARD' %}
+                                <a href="{% url 'edit_transaction' transaction.id %}" class="btn btn-outline-secondary btn-sm">
+                                    Edit
+                                </a>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <p class="text-muted">No transactions found for this student.</p>
+                        <a href="{% url 'award_coins' %}" class="btn btn-primary btn-sm">Award First Coins</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions Sidebar -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">Quick Actions</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'award_coins' %}" class="btn btn-success">
+                        <i class="bi bi-plus-circle"></i> Award Coins
+                    </a>
+                    <a href="{% url 'deduct_coins' %}" class="btn btn-warning">
+                        <i class="bi bi-dash-circle"></i> Deduct Coins
+                    </a>
+                    <a href="{% url 'student_edit' student.id %}" class="btn btn-info">
+                        <i class="bi bi-pencil"></i> Edit Student
+                    </a>
+                    <a href="{% url 'transaction_history' %}?student={{ student.id }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-clock-history"></i> Full History
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Student Statistics -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0">Statistics</h6>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-6">Current Balance:</dt>
+                    <dd class="col-6">
+                        <span class="badge bg-{% if student.balance > 0 %}success{% elif student.balance == 0 %}secondary{% else %}danger{% endif %}">
+                            {{ student.balance }} IQ-coins
+                        </span>
+                    </dd>
+                    
+                    <dt class="col-6">Recent Transactions:</dt>
+                    <dd class="col-6">{{ recent_transactions|length }}</dd>
+                    
+                    <dt class="col-6">Class:</dt>
+                    <dd class="col-6">
+                        <span class="badge bg-info">{{ student.group.group }}</span>
+                    </dd>
+                    
+                    <dt class="col-6">Teacher:</dt>
+                    <dd class="col-6">{{ student.group.teacher.username }}</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.edited-transaction {
+    background-color: #fff3cd;
+}
+
+.transaction-award {
+    color: #198754;
+}
+
+.transaction-deduct {
+    color: #dc3545;
+}
+
+.display-4 {
+    font-weight: bold;
+}
+</style>
+{% endblock %}
