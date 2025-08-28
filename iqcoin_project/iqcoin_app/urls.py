@@ -15,4 +15,9 @@ urlpatterns = [
     path('students/create/', views.student_create, name='student_create'),
     path('students/<int:student_id>/', views.student_detail, name='student_detail'),
     path('students/<int:student_id>/edit/', views.student_edit, name='student_edit'),
+    # Class management URLs
+    path('classes/', views.class_list, name='class_list'),
+    path('classes/create/', views.class_create, name='class_create'),
+    path('classes/<int:class_id>/', views.class_detail, name='class_detail'),
+    path('classes/<int:class_id>/edit/', views.class_edit, name='class_edit'),
 ]

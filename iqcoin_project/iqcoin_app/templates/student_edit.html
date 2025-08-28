@@ -32,6 +32,22 @@
                     </div>
                     
                     <div class="mb-3">
+                        <label for="{{ form.group.id_for_label }}" class="form-label">
+                            {{ form.group.label }}
+                        </label>
+                        {{ form.group }}
+                        {% if form.group.errors %}
+                            <div class="text-danger">
+                                {{ form.group.errors }}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">
+                            Current class: <strong>{{ student.group.group }}</strong>. 
+                            Change this to transfer the student to a different class.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
                         <label for="{{ form.balance.id_for_label }}" class="form-label">
                             {{ form.balance.label }}
                         </label>

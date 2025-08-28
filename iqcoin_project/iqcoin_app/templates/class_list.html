@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+
+{% block title %}My Classes - IQ-Coin Tracker{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>My Classes</h2>
+    <a href="{% url 'class_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> Create New Class
+    </a>
+</div>
+
+<!-- Search Form -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <form method="GET" class="d-flex">
+            <input type="text" name="search" class="form-control me-2" 
+                   placeholder="Search classes or descriptions..." 
+                   value="{{ search_query }}"
+                   aria-label="Search classes">
+            <button class="btn btn-outline-secondary" type="submit">Search</button>
+            {% if search_query %}
+                <a href="{% url 'class_list' %}" class="btn btn-outline-secondary ms-2">Clear</a>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+<!-- Classes Grid -->
+<div class="row">
+    {% if classes_with_counts %}
+        {% for item in classes_with_counts %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100 clickable-card" style="cursor: pointer;" onclick="window.location='{% url 'class_detail' item.class.id %}'">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">{{ item.class.group }}</h5>
+                        <span class="badge bg-primary">{{ item.student_count }} students</span>
+                    </div>
+                    <div class="card-body">
+                        {% if item.class.description %}
+                            <p class="card-text">{{ item.class.description|truncatewords:15 }}</p>
+                        {% else %}
+                            <p class="card-text text-muted">No description provided.</p>
+                        {% endif %}
+                        
+                        <div class="mt-3">
+                            <small class="text-muted">
+                                <strong>Students:</strong> {{ item.student_count }}<br>
+                                <strong>Teacher:</strong> {{ item.class.teacher.username }}
+                            </small>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <div class="btn-group btn-group-sm w-100" role="group">
+                            <a href="{% url 'class_detail' item.class.id %}" class="btn btn-outline-info" onclick="event.stopPropagation();">
+                                <i class="bi bi-eye"></i> View
+                            </a>
+                            <a href="{% url 'class_edit' item.class.id %}" class="btn btn-outline-warning" onclick="event.stopPropagation();">
+                                <i class="bi bi-pencil"></i> Edit
+                            </a>
+                            <a href="{% url 'student_create' %}?class={{ item.class.id }}" class="btn btn-outline-success" onclick="event.stopPropagation();">
+                                <i class="bi bi-person-plus"></i> Add Student
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="col-12">
+            <div class="text-center py-5">
+                <h4 class="text-muted">No classes found</h4>
+                <p class="text-muted">
+                    {% if search_query %}
+                        No classes match your search criteria.
+                    {% else %}
+                        You haven't created any classes yet.
+                    {% endif %}
+                </p>
+                {% if not search_query %}
+                    <a href="{% url 'class_create' %}" class="btn btn-primary btn-lg">
+                        <i class="bi bi-plus-circle"></i> Create Your First Class
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Summary Statistics -->
+{% if classes_with_counts %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-title">Summary</h6>
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <h4 class="text-primary">{{ classes_with_counts|length }}</h4>
+                            <small class="text-muted">Total Classes</small>
+                        </div>
+                        <div class="col-md-3">
+                            <h4 class="text-success">
+                                {% for item in classes_with_counts %}
+                                    {% if forloop.first %}{{ item.student_count }}{% else %}{% endif %}
+                                {% endfor %}
+                                {% for item in classes_with_counts %}
+                                    {% if not forloop.first %}{{ item.student_count|add:0 }}{% endif %}
+                                {% endfor %}
+                            </h4>
+                            <small class="text-muted">Total Students</small>
+                        </div>
+                        <div class="col-md-3">
+                            <h4 class="text-info">
+                                {% for item in classes_with_counts %}
+                                    {% if item.student_count > 0 %}1{% else %}0{% endif %}
+                                {% endfor %}
+                            </h4>
+                            <small class="text-muted">Active Classes</small>
+                        </div>
+                        <div class="col-md-3">
+                            <h4 class="text-warning">{{ user.username }}</h4>
+                            <small class="text-muted">Teacher</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<style>
+.clickable-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.12);
+    transition: all 0.3s ease;
+}
+
+.clickable-card {
+    transition: all 0.3s ease;
+}
+
+.card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.card-footer .btn-group button,
+.card-footer .btn-group a {
+    border-radius: 0;
+}
+
+.card-footer .btn-group button:first-child,
+.card-footer .btn-group a:first-child {
+    border-bottom-left-radius: 0.375rem;
+}
+
+.card-footer .btn-group button:last-child,
+.card-footer .btn-group a:last-child {
+    border-bottom-right-radius: 0.375rem;
+}
+</style>
+{% endblock %}

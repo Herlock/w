@@ -37,12 +37,47 @@ class StudentForm(forms.ModelForm):
 class StudentEditForm(forms.ModelForm):
     class Meta:
         model = Student
-        fields = ['name', 'balance']
+        fields = ['name', 'group', 'balance']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter student name'}),
+            'group': forms.Select(attrs={'class': 'form-control'}),
             'balance': forms.NumberInput(attrs={'class': 'form-control', 'min': 0}),
         }
         labels = {
             'name': 'Student Name',
+            'group': 'Class/Group',
             'balance': 'IQ-coin Balance',
+        }
+    
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        if user:
+            # Only show classes that belong to the current teacher
+            self.fields['group'].queryset = Class.objects.filter(teacher=user)
+
+class ClassForm(forms.ModelForm):
+    class Meta:
+        model = Class
+        fields = ['group', 'description']
+        widgets = {
+            'group': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter class/group name'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Optional description'}),
+        }
+        labels = {
+            'group': 'Class/Group Name',
+            'description': 'Description',
+        }
+
+class ClassEditForm(forms.ModelForm):
+    class Meta:
+        model = Class
+        fields = ['group', 'description']
+        widgets = {
+            'group': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter class/group name'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Optional description'}),
+        }
+        labels = {
+            'group': 'Class/Group Name',
+            'description': 'Description',
         }

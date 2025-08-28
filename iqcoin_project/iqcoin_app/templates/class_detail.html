@@ -1,0 +1,261 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ class_obj.group }} - IQ-Coin Tracker{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <!-- Class Information Card -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">{{ class_obj.group }}</h4>
+                <div class="btn-group" role="group">
+                    <a href="{% url 'class_edit' class_obj.id %}" class="btn btn-warning btn-sm">
+                        <i class="bi bi-pencil"></i> Edit Class
+                    </a>
+                    <a href="{% url 'class_list' %}" class="btn btn-secondary btn-sm">
+                        <i class="bi bi-arrow-left"></i> Back to List
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-4">Class Name:</dt>
+                            <dd class="col-sm-8">{{ class_obj.group }}</dd>
+                            
+                            <dt class="col-sm-4">Teacher:</dt>
+                            <dd class="col-sm-8">{{ class_obj.teacher.username }}</dd>
+                            
+                            <dt class="col-sm-4">Students:</dt>
+                            <dd class="col-sm-8">
+                                <span class="badge bg-primary">{{ students.count }}</span>
+                            </dd>
+                        </dl>
+                    </div>
+                    <div class="col-md-6">
+                        {% if class_obj.description %}
+                            <div class="border p-3 rounded bg-light">
+                                <h6>Description:</h6>
+                                <p class="mb-0">{{ class_obj.description }}</p>
+                            </div>
+                        {% else %}
+                            <div class="text-center text-muted">
+                                <i class="bi bi-info-circle"></i>
+                                <p class="mb-0">No description provided</p>
+                                <a href="{% url 'class_edit' class_obj.id %}" class="btn btn-outline-secondary btn-sm mt-2">
+                                    Add Description
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Students List -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Students ({{ students.count }})</h5>
+                <a href="{% url 'student_create' %}?class={{ class_obj.id }}" class="btn btn-success btn-sm">
+                    <i class="bi bi-person-plus"></i> Add Student
+                </a>
+            </div>
+            <div class="card-body">
+                {% if students %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Balance</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for student in students %}
+                                <tr class="clickable-row" style="cursor: pointer;" onclick="window.location='{% url 'student_detail' student.id %}'">
+                                    <td>
+                                        <strong>{{ student.name }}</strong>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{% if student.balance > 0 %}success{% elif student.balance == 0 %}secondary{% else %}danger{% endif %}">
+                                            {{ student.balance }} IQ-coins
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a href="{% url 'student_detail' student.id %}" class="btn btn-outline-info btn-sm" onclick="event.stopPropagation();">
+                                                <i class="bi bi-eye"></i> View
+                                            </a>
+                                            <a href="{% url 'student_edit' student.id %}" class="btn btn-outline-warning btn-sm" onclick="event.stopPropagation();">
+                                                <i class="bi bi-pencil"></i> Edit
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-people" style="font-size: 3rem; color: #6c757d;"></i>
+                        <h5 class="text-muted mt-3">No students in this class yet</h5>
+                        <p class="text-muted">Add your first student to get started with IQ-coin tracking.</p>
+                        <a href="{% url 'student_create' %}?class={{ class_obj.id }}" class="btn btn-primary">
+                            <i class="bi bi-person-plus"></i> Add First Student
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Recent Transactions -->
+        {% if recent_transactions %}
+            <div class="card mt-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Recent Class Activity</h5>
+                    <a href="{% url 'transaction_history' %}?class={{ class_obj.id }}" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-clock-history"></i> View All
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        {% for transaction in recent_transactions %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center {% if transaction.edited %}edited-transaction{% endif %}">
+                            <div>
+                                <h6 class="mb-1">
+                                    <span class="transaction-{{ transaction.type|lower }}">
+                                        {% if transaction.type == 'AWARD' %}
+                                            <i class="bi bi-plus-circle"></i> +{{ transaction.amount }}
+                                        {% else %}
+                                            <i class="bi bi-dash-circle"></i> -{{ transaction.amount }}
+                                        {% endif %}
+                                    </span>
+                                    IQ-coins → {{ transaction.student.name }}
+                                </h6>
+                                <p class="mb-1">
+                                    <small class="text-muted">
+                                        by {{ transaction.teacher.username }} on {{ transaction.date|date:"M d, Y H:i" }}
+                                    </small>
+                                </p>
+                                {% if transaction.comment %}
+                                    <p class="mb-0">
+                                        <small class="text-muted">{{ transaction.comment }}</small>
+                                    </p>
+                                {% endif %}
+                                {% if transaction.edited %}
+                                    <small class="badge bg-warning text-dark">Edited</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Quick Actions Sidebar -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">Class Actions</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'student_create' %}?class={{ class_obj.id }}" class="btn btn-success">
+                        <i class="bi bi-person-plus"></i> Add Student
+                    </a>
+                    {% if students %}
+                        <a href="{% url 'award_coins' %}" class="btn btn-primary">
+                            <i class="bi bi-coin"></i> Award Coins
+                        </a>
+                        <a href="{% url 'deduct_coins' %}" class="btn btn-warning">
+                            <i class="bi bi-dash-circle"></i> Deduct Coins
+                        </a>
+                    {% endif %}
+                    <a href="{% url 'class_edit' class_obj.id %}" class="btn btn-info">
+                        <i class="bi bi-pencil"></i> Edit Class
+                    </a>
+                    <a href="{% url 'transaction_history' %}?class={{ class_obj.id }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-clock-history"></i> Class History
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Class Statistics -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0">Class Statistics</h6>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-6">Total Students:</dt>
+                    <dd class="col-6">
+                        <span class="badge bg-primary">{{ students.count }}</span>
+                    </dd>
+                    
+                    <dt class="col-6">Recent Activity:</dt>
+                    <dd class="col-6">{{ recent_transactions|length }} transactions</dd>
+                    
+                    <dt class="col-6">Class Name:</dt>
+                    <dd class="col-6">{{ class_obj.group }}</dd>
+                    
+                    <dt class="col-6">Teacher:</dt>
+                    <dd class="col-6">{{ class_obj.teacher.username }}</dd>
+                </dl>
+                
+                {% if students %}
+                    <hr>
+                    <h6>Balance Overview:</h6>
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <h6 class="text-success">{{ students|length }}</h6>
+                            <small class="text-muted">Students</small>
+                        </div>
+                        <div class="col-4">
+                            <h6 class="text-primary">
+                                {% for student in students %}{{ student.balance }}{% if not forloop.last %}+{% endif %}{% endfor %}
+                            </h6>
+                            <small class="text-muted">Total Coins</small>
+                        </div>
+                        <div class="col-4">
+                            <h6 class="text-info">
+                                {% if students %}
+                                    {% for student in students %}{{ student.balance }}{% if not forloop.last %}+{% endif %}{% endfor %}
+                                {% else %}0{% endif %}
+                            </h6>
+                            <small class="text-muted">Average</small>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.clickable-row:hover {
+    background-color: #f8f9fa;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
+}
+
+.edited-transaction {
+    background-color: #fff3cd;
+}
+
+.transaction-award {
+    color: #198754;
+}
+
+.transaction-deduct {
+    color: #dc3545;
+}
+</style>
+{% endblock %}

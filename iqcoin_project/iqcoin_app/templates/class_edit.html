@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit {{ class_obj.group }} - IQ-Coin Tracker{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Edit Class: {{ class_obj.group }}</h4>
+                <div class="btn-group btn-group-sm" role="group">
+                    <a href="{% url 'class_detail' class_obj.id %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-eye"></i> View Details
+                    </a>
+                    <a href="{% url 'class_list' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to List
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.group.id_for_label }}" class="form-label">
+                            {{ form.group.label }} <span class="text-danger">*</span>
+                        </label>
+                        {{ form.group }}
+                        {% if form.group.errors %}
+                            <div class="text-danger">
+                                {{ form.group.errors }}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">
+                            Update the name/identifier for this class.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.description.id_for_label }}" class="form-label">
+                            {{ form.description.label }}
+                        </label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                            <div class="text-danger">
+                                {{ form.description.errors }}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">
+                            Update the description or additional information about this class.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h6 class="card-title">Class Information</h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p class="card-text mb-1">
+                                            <strong>Current Name:</strong> {{ class_obj.group }}
+                                        </p>
+                                        <p class="card-text mb-1">
+                                            <strong>Teacher:</strong> {{ class_obj.teacher.username }}
+                                        </p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p class="card-text mb-1">
+                                            <strong>Students:</strong> 
+                                            <span class="badge bg-primary">{{ class_obj.student_set.count }}</span>
+                                        </p>
+                                        <p class="card-text mb-0">
+                                            <strong>Created:</strong> 
+                                            <small class="text-muted">by {{ class_obj.teacher.username }}</small>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if class_obj.student_set.count > 0 %}
+                        <div class="alert alert-warning">
+                            <h6 class="alert-heading">
+                                <i class="bi bi-exclamation-triangle"></i> Note about Students
+                            </h6>
+                            <p class="mb-0">
+                                This class currently has <strong>{{ class_obj.student_set.count }} student(s)</strong>. 
+                                Changing the class name will not affect the students' data or their IQ-coin balances.
+                            </p>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'class_detail' class_obj.id %}" class="btn btn-secondary">
+                            Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0">Quick Actions</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2 d-md-flex">
+                    <a href="{% url 'student_create' %}?class={{ class_obj.id }}" class="btn btn-success btn-sm">
+                        <i class="bi bi-person-plus"></i> Add New Student
+                    </a>
+                    <a href="{% url 'class_detail' class_obj.id %}" class="btn btn-info btn-sm">
+                        <i class="bi bi-list-ul"></i> View All Students
+                    </a>
+                    {% if class_obj.student_set.count > 0 %}
+                        <a href="{% url 'award_coins' %}" class="btn btn-primary btn-sm">
+                            <i class="bi bi-coin"></i> Award Coins
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Student List Preview -->
+        {% if class_obj.student_set.count > 0 %}
+            <div class="card mt-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">Students in this Class</h6>
+                    <a href="{% url 'class_detail' class_obj.id %}" class="btn btn-outline-primary btn-sm">View All</a>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for student in class_obj.student_set.all|slice:":6" %}
+                            <div class="col-md-4 mb-2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span>{{ student.name }}</span>
+                                    <span class="badge bg-{% if student.balance > 0 %}success{% elif student.balance == 0 %}secondary{% else %}danger{% endif %}">
+                                        {{ student.balance }}
+                                    </span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                        {% if class_obj.student_set.count > 6 %}
+                            <div class="col-12">
+                                <small class="text-muted">
+                                    ... and {{ class_obj.student_set.count|add:"-6" }} more students
+                                </small>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const groupField = document.getElementById('{{ form.group.id_for_label }}');
+    const originalName = '{{ class_obj.group }}';
+    
+    if (groupField) {
+        groupField.addEventListener('input', function() {
+            const newName = this.value;
+            
+            // Show change indicator
+            let indicator = document.getElementById('name-change-indicator');
+            if (!indicator) {
+                indicator = document.createElement('div');
+                indicator.id = 'name-change-indicator';
+                indicator.className = 'mt-2';
+                groupField.parentNode.appendChild(indicator);
+            }
+            
+            if (newName !== originalName && newName.trim() !== '') {
+                indicator.innerHTML = `<small class="text-info">
+                    <i class="bi bi-arrow-right"></i> <strong>Name will change:</strong> 
+                    "${originalName}" → "${newName}"
+                </small>`;
+            } else {
+                indicator.innerHTML = '';
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

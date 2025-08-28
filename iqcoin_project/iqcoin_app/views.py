@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.db.models import Q
 from django.db import transaction as db_transaction
 from .models import Student, Class, Transaction
-from .forms import AwardCoinsForm, DeductCoinsForm, EditTransactionForm, StudentForm, StudentEditForm
+from .forms import AwardCoinsForm, DeductCoinsForm, EditTransactionForm, StudentForm, StudentEditForm, ClassForm, ClassEditForm
 
 def user_login(request):
     if request.method == 'POST':
@@ -23,9 +23,14 @@ def user_login(request):
 def home(request):
     students = Student.objects.all().order_by('group', 'name')
     recent_transactions = Transaction.objects.all().order_by('-date')[:10]
+    
+    # Get teacher's classes
+    teacher_classes = Class.objects.filter(teacher=request.user).order_by('group')
+    
     context = {
         'students': students,
         'recent_transactions': recent_transactions,
+        'teacher_classes': teacher_classes,
     }
     return render(request, 'home.html', context)
 
@@ -206,11 +211,13 @@ def student_edit(request, student_id):
     student = get_object_or_404(Student, id=student_id, group__teacher=request.user)
     
     if request.method == 'POST':
-        form = StudentEditForm(request.POST, instance=student)
+        form = StudentEditForm(request.POST, instance=student, user=request.user)
         if form.is_valid():
             old_balance = student.balance
+            old_group = student.group
             updated_student = form.save()
             new_balance = updated_student.balance
+            new_group = updated_student.group
             
             # If balance was changed, create a transaction record
             if old_balance != new_balance:
@@ -224,13 +231,106 @@ def student_edit(request, student_id):
                     comment=f'Balance manually adjusted from {old_balance} to {new_balance}'
                 )
             
+            # If group was changed, add a comment about the transfer
+            if old_group != new_group:
+                messages.info(request, f'Student transferred from "{old_group.group}" to "{new_group.group}".')
+            
             messages.success(request, f'Student "{updated_student.name}" has been updated successfully.')
             return redirect('student_detail', student_id=updated_student.id)
     else:
-        form = StudentEditForm(instance=student)
+        form = StudentEditForm(instance=student, user=request.user)
     
     context = {
         'form': form,
         'student': student,
     }
     return render(request, 'student_edit.html', context)
+
+# Class Management Views
+@login_required
+def class_list(request):
+    # Filter classes by the current teacher
+    classes = Class.objects.filter(teacher=request.user).order_by('group')
+    
+    # Add student count for each class
+    classes_with_counts = []
+    for class_obj in classes:
+        student_count = Student.objects.filter(group=class_obj).count()
+        classes_with_counts.append({
+            'class': class_obj,
+            'student_count': student_count
+        })
+    
+    # Get search query
+    search_query = request.GET.get('search')
+    if search_query:
+        classes = classes.filter(
+            Q(group__icontains=search_query) |
+            Q(description__icontains=search_query)
+        )
+        classes_with_counts = []
+        for class_obj in classes:
+            student_count = Student.objects.filter(group=class_obj).count()
+            classes_with_counts.append({
+                'class': class_obj,
+                'student_count': student_count
+            })
+    
+    context = {
+        'classes_with_counts': classes_with_counts,
+        'search_query': search_query,
+    }
+    return render(request, 'class_list.html', context)
+
+@login_required
+def class_detail(request, class_id):
+    class_obj = get_object_or_404(Class, id=class_id, teacher=request.user)
+    
+    # Get students in this class
+    students = Student.objects.filter(group=class_obj).order_by('name')
+    
+    # Get recent transactions for this class
+    recent_transactions = Transaction.objects.filter(
+        student__group=class_obj
+    ).order_by('-date')[:10]
+    
+    context = {
+        'class_obj': class_obj,
+        'students': students,
+        'recent_transactions': recent_transactions,
+    }
+    return render(request, 'class_detail.html', context)
+
+@login_required
+def class_create(request):
+    if request.method == 'POST':
+        form = ClassForm(request.POST)
+        if form.is_valid():
+            class_obj = form.save(commit=False)
+            class_obj.teacher = request.user  # Automatically assign to current teacher
+            class_obj.save()
+            messages.success(request, f'Class "{class_obj.group}" has been created successfully.')
+            return redirect('class_list')
+    else:
+        form = ClassForm()
+    
+    return render(request, 'class_create.html', {'form': form})
+
+@login_required
+def class_edit(request, class_id):
+    class_obj = get_object_or_404(Class, id=class_id, teacher=request.user)
+    
+    if request.method == 'POST':
+        form = ClassEditForm(request.POST, instance=class_obj)
+        if form.is_valid():
+            updated_class = form.save()
+            messages.success(request, f'Class "{updated_class.group}" has been updated successfully.')
+            return redirect('class_detail', class_id=updated_class.id)
+    else:
+        form = ClassEditForm(instance=class_obj)
+    
+    context = {
+        'form': form,
+        'class_obj': class_obj,
+    }
+    return render(request, 'class_edit.html', context)
