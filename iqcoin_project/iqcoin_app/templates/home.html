@@ -10,9 +10,9 @@
             <table class="table table-striped">
                 <thead>
                     <tr>
-                        <th>Name</th>
-                        <th>Group</th>
-                        <th>Balance</th>
+                        <th>Имя</th>
+                        <th>Группа</th>
+                        <th>Баланс</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -21,12 +21,12 @@
                         <td>{{ student.name }}</td>
                         <td>{{ student.group.group }}</td>
                         <td>
-                            <span class="badge bg-primary">{{ student.balance }} IQ-coins</span>
+                            <span class="badge bg-primary">{{ student.balance }} Айкьюшек</span>
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="3" class="text-center">No students found.</td>
+                        <td colspan="3" class="text-center">Студены не найдены</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -35,14 +35,14 @@
     </div>
     
     <div class="col-md-4">
-        <h3>Quick Actions</h3>
+        <h3>Быстрые действия:</h3>
         <div class="d-grid gap-2">
-            <a href="{% url 'award_coins' %}" class="btn btn-success">Award Coins</a>
-            <a href="{% url 'deduct_coins' %}" class="btn btn-warning">Deduct Coins</a>
-            <a href="{% url 'transaction_history' %}" class="btn btn-info">View History</a>
+            <a href="{% url 'award_coins' %}" class="btn btn-success">Наградить Айкьюшками</a>
+            <a href="{% url 'deduct_coins' %}" class="btn btn-warning">Списать айкьюшки</a>
+            <a href="{% url 'transaction_history' %}" class="btn btn-info">История начислений</a>
         </div>
         
-        <h4 class="mt-4">Recent Transactions</h4>
+        <h4 class="mt-4">История начислений</h4>
         <div class="list-group">
             {% for transaction in recent_transactions %}
             <div class="list-group-item {% if transaction.edited %}edited-transaction{% endif %}">
@@ -62,7 +62,7 @@
             </div>
             {% empty %}
             <div class="list-group-item">
-                <p class="mb-1">No recent transactions.</p>
+                <p class="mb-1">Нет предыдущих начислений</p>
             </div>
             {% endfor %}
         </div>
