@@ -7,7 +7,7 @@
     <div class="col-md-8">
         <div class="card">
             <div class="card-header">
-                <h3>Award IQ-Coins</h3>
+                <h3>Наградить Айкьюшками</h3>
             </div>
             <div class="card-body">
                 <form method="post">
@@ -21,7 +21,7 @@
                         {% if form.amount.errors %}
                             <div class="text-danger">{{ form.amount.errors }}</div>
                         {% endif %}
-                        <div class="form-text">Award 1-3 IQ-coins to selected students.</div>
+                        <div class="form-text">Наградите 1-3 Айкьюшками выбранных учеников.</div>
                     </div>
                     
                     <div class="mb-3">
@@ -44,8 +44,8 @@
                     </div>
                     
                     <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                        <a href="{% url 'home' %}" class="btn btn-secondary">Cancel</a>
-                        <button type="submit" class="btn btn-success">Award Coins</button>
+                        <a href="{% url 'home' %}" class="btn btn-secondary">Отменить</a>
+                        <button type="submit" class="btn btn-success">Наградить</button>
                     </div>
                 </form>
             </div>
