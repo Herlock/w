@@ -41,51 +41,41 @@
     <div class="col-md-4">
         <h3>Быстрые действия:</h3>
         <div class="d-grid gap-2">
-<<<<<<< HEAD
-            <a href="{% url 'class_list' %}" class="btn btn-primary">Manage Classes</a>
-            <a href="{% url 'student_list' %}" class="btn btn-info">Manage Students</a>
-            <a href="{% url 'award_coins' %}" class="btn btn-success">Award Coins</a>
-            <a href="{% url 'deduct_coins' %}" class="btn btn-warning">Deduct Coins</a>
-            <a href="{% url 'transaction_history' %}" class="btn btn-secondary">View History</a>
+            <a href="{% url 'award_coins' %}" class="btn btn-success">Наградить Айкьюшками</a>
+            <a href="{% url 'deduct_coins' %}" class="btn btn-warning">Списать айкьюшки</a>
+            <a href="{% url 'transaction_history' %}" class="btn btn-info">История начислений</a>
+            <a href="{% url 'student_list' %}" class="btn btn-primary">Управление учениками</a>
+            <a href="{% url 'class_list' %}" class="btn btn-secondary">Управление классами</a>
         </div>
         
         <!-- Class Summary -->
         {% if teacher_classes %}
-        <h4 class="mt-4">My Classes ({{ teacher_classes|length }})</h4>
+        <h4 class="mt-4">Мои классы ({{ teacher_classes|length }})</h4>
         <div class="list-group">
             {% for class in teacher_classes %}
             <a href="{% url 'class_detail' class.id %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
                 <div>
                     <h6 class="mb-1">{{ class.group }}</h6>
-                    <small class="text-muted">{{ class.student_set.count }} students</small>
+                    <small class="text-muted">{{ class.student_set.count }} учеников</small>
                 </div>
                 <span class="badge bg-primary rounded-pill">{{ class.student_set.count }}</span>
             </a>
             {% endfor %}
             {% if teacher_classes|length > 3 %}
             <a href="{% url 'class_list' %}" class="list-group-item list-group-item-action text-center text-muted">
-                <small>View all {{ teacher_classes|length }} classes →</small>
+                <small>Показать все {{ teacher_classes|length }} классов →</small>
             </a>
             {% endif %}
         </div>
         {% else %}
         <div class="alert alert-info mt-4">
-            <h6 class="alert-heading">No Classes Yet</h6>
-            <p class="mb-2">Create your first class to start managing students and IQ-coins.</p>
-            <a href="{% url 'class_create' %}" class="btn btn-primary btn-sm">Create First Class</a>
+            <h6 class="alert-heading">Пока нет классов</h6>
+            <p class="mb-2">Создайте свой первый класс для управления учениками и Айкьюшками.</p>
+            <a href="{% url 'class_create' %}" class="btn btn-primary btn-sm">Создать первый класс</a>
         </div>
         {% endif %}
         
-        <h4 class="mt-4">Recent Transactions</h4>
-=======
-            <a href="{% url 'award_coins' %}" class="btn btn-success">Наградить Айкьюшками</a>
-            <a href="{% url 'deduct_coins' %}" class="btn btn-warning">Списать айкьюшки</a>
-            <a href="{% url 'transaction_history' %}" class="btn btn-info">История начислений</a>
-            <a href="{% url 'student_list' %}" class="btn btn-primary">Управление учениками</a>
-        </div>
-        
         <h4 class="mt-4">История начислений</h4>
->>>>>>> 0b9c99225a9be78101cd8626646f16f92e97c360
         <div class="list-group">
             {% for transaction in recent_transactions %}
             <div class="list-group-item {% if transaction.edited %}edited-transaction{% endif %}">

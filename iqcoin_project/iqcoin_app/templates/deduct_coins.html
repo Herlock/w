@@ -42,12 +42,12 @@
                         {% if form.comment.errors %}
                             <div class="text-danger">{{ form.comment.errors }}</div>
                         {% endif %}
-                        <div class="form-text">Reason for deducting coins (required).</div>
+                        <div class="form-text">Причина списания айкьюшек (обязательно).</div>
                     </div>
                     
                     <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                        <a href="{% url 'home' %}" class="btn btn-secondary">Cancel</a>
-                        <button type="submit" class="btn btn-warning">Deduct Coins</button>
+                        <a href="{% url 'home' %}" class="btn btn-secondary">Отмена</a>
+                        <button type="submit" class="btn btn-warning">Списать айкьюшки</button>
                     </div>
                 </form>
             </div>
