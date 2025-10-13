@@ -11,10 +11,10 @@
                 <h4 class="mb-0">{{ student.name }}</h4>
                 <div class="btn-group" role="group">
                     <a href="{% url 'student_edit' student.id %}" class="btn btn-warning btn-sm">
-                        Edit Student
+                        Изменить
                     </a>
                     <a href="{% url 'student_list' %}" class="btn btn-secondary btn-sm">
-                        Back to List
+                        Назад к списку
                     </a>
                 </div>
             </div>
@@ -22,15 +22,15 @@
                 <div class="row">
                     <div class="col-md-6">
                         <dl class="row">
-                            <dt class="col-sm-4">Name:</dt>
+                            <dt class="col-sm-4">Имя:</dt>
                             <dd class="col-sm-8">{{ student.name }}</dd>
                             
-                            <dt class="col-sm-4">Class:</dt>
+                            <dt class="col-sm-4">Класс:</dt>
                             <dd class="col-sm-8">
                                 <span class="badge bg-secondary">{{ student.group.group }}</span>
                             </dd>
                             
-                            <dt class="col-sm-4">Teacher:</dt>
+                            <dt class="col-sm-4">Учитель:</dt>
                             <dd class="col-sm-8">{{ student.group.teacher.username }}</dd>
                         </dl>
                     </div>
@@ -41,7 +41,7 @@
                                     {{ student.balance }}
                                 </span>
                             </h2>
-                            <p class="text-muted">IQ-coin Balance</p>
+                            <p class="text-muted">Баланс Айкьюшек</p>
                         </div>
                     </div>
                 </div>
@@ -51,9 +51,9 @@
         <!-- Recent Transactions -->
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Recent Transactions</h5>
+                <h5 class="mb-0">Прошлые транзакции</h5>
                 <a href="{% url 'transaction_history' %}?student={{ student.id }}" class="btn btn-outline-primary btn-sm">
-                    View All
+                    Показать все
                 </a>
             </div>
             <div class="card-body">
@@ -70,7 +70,7 @@
                                             <i class="bi bi-dash-circle"></i> -{{ transaction.amount }}
                                         {% endif %}
                                     </span>
-                                    IQ-coins
+                                    айкьюшки
                                 </h6>
                                 <p class="mb-1">
                                     <small class="text-muted">
@@ -83,12 +83,12 @@
                                     </p>
                                 {% endif %}
                                 {% if transaction.edited %}
-                                    <small class="badge bg-warning text-dark">Edited</small>
+                                    <small class="badge bg-warning text-dark">Исправлен</small>
                                 {% endif %}
                             </div>
                             {% if transaction.type == 'AWARD' %}
                                 <a href="{% url 'edit_transaction' transaction.id %}" class="btn btn-outline-secondary btn-sm">
-                                    Edit
+                                    Изменить
                                 </a>
                             {% endif %}
                         </div>
@@ -96,7 +96,7 @@
                     </div>
                 {% else %}
                     <div class="text-center py-4">
-                        <p class="text-muted">No transactions found for this student.</p>
+                        <p class="text-muted">Не найдено транзакций по заданному ученику</p>
                         <a href="{% url 'award_coins' %}" class="btn btn-primary btn-sm">Award First Coins</a>
                     </div>
                 {% endif %}

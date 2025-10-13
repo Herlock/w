@@ -51,6 +51,7 @@
         <!-- Class Summary -->
         {% if teacher_classes %}
         <h4 class="mt-4">Мои классы ({{ teacher_classes|length }})</h4>
+        <h4 class="mt-4">Мои классы ({{ teacher_classes|length }})</h4>
         <div class="list-group">
             {% for class in teacher_classes %}
             <a href="{% url 'class_detail' class.id %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
