@@ -189,8 +189,17 @@
                 <a class="nav-link" href="{% url 'award_coins' %}">Наградить</a>
                 <a class="nav-link" href="{% url 'deduct_coins' %}">Списать</a>
                 <a class="nav-link" href="{% url 'transaction_history' %}">History</a>
+                {% if user.userprofile.role == 'admin' %}
                 <a class="nav-link" href="{% url 'admin:index' %}">Admin</a>
-                <span class="navbar-text me-3">Добро пожаловать, {{ user.username }}!</span>
+                {% endif %}
+                <span class="navbar-text me-3">
+                    Добро пожаловать, 
+                    {% if user.userprofile.full_name %}
+                        {{ user.userprofile.full_name }}
+                    {% else %}
+                        {{ user.username }}
+                    {% endif %}!
+                </span>
                 <a class="nav-link" href="{% url 'logout' %}">Выйти</a>
             </div>
             {% endif %}

@@ -46,7 +46,12 @@
                         <div class="mt-3">
                             <small class="text-muted">
                                 <strong>Ученики:</strong> {{ item.student_count }}<br>
-                                <strong>Учитель:</strong> {{ item.class.teacher.username }}
+                                <strong>Учитель:</strong> 
+                                {% if item.class.teacher.userprofile.full_name %}
+                                    {{ item.class.teacher.userprofile.full_name }}
+                                {% else %}
+                                    {{ item.class.teacher.username }}
+                                {% endif %}
                             </small>
                         </div>
                     </div>
@@ -119,7 +124,13 @@
                             <small class="text-muted">Активные классы</small>
                         </div>
                         <div class="col-md-3">
-                            <h4 class="text-warning">{{ user.username }}</h4>
+                            <h4 class="text-warning">
+                                {% if user.userprofile.full_name %}
+                                    {{ user.userprofile.full_name }}
+                                {% else %}
+                                    {{ user.username }}
+                                {% endif %}
+                            </h4>
                             <small class="text-muted">Учитель</small>
                         </div>
                     </div>

@@ -73,7 +73,13 @@
                         {% if transaction.type == 'AWARD' %}+{% else %}-{% endif %}{{ transaction.amount }}
                     </span>
                 </td>
-                <td>{{ transaction.teacher.username }}</td>
+                <td>
+                    {% if transaction.teacher.userprofile.full_name %}
+                        {{ transaction.teacher.userprofile.full_name }}
+                    {% else %}
+                        {{ transaction.teacher.username }}
+                    {% endif %}
+                </td>
                 <td>
                     {% if transaction.comment %}
                         {{ transaction.comment|truncatechars:50 }}
