@@ -31,7 +31,13 @@
                             </dd>
                             
                             <dt class="col-sm-4">Учитель:</dt>
-                            <dd class="col-sm-8">{{ student.group.teacher.username }}</dd>
+                            <dd class="col-sm-8">
+                                {% if student.group.teacher.userprofile.full_name %}
+                                    {{ student.group.teacher.userprofile.full_name }}
+                                {% else %}
+                                    {{ student.group.teacher.username }}
+                                {% endif %}
+                            </dd>
                         </dl>
                     </div>
                     <div class="col-md-6">
@@ -74,7 +80,13 @@
                                 </h6>
                                 <p class="mb-1">
                                     <small class="text-muted">
-                                        by {{ transaction.teacher.username }} on {{ transaction.date|date:"M d, Y H:i" }}
+                                        by 
+                                        {% if transaction.teacher.userprofile.full_name %}
+                                            {{ transaction.teacher.userprofile.full_name }}
+                                        {% else %}
+                                            {{ transaction.teacher.username }}
+                                        {% endif %} 
+                                        on {{ transaction.date|date:"M d, Y H:i" }}
                                     </small>
                                 </p>
                                 {% if transaction.comment %}
@@ -151,7 +163,13 @@
                     </dd>
                     
                     <dt class="col-6">Teacher:</dt>
-                    <dd class="col-6">{{ student.group.teacher.username }}</dd>
+                    <dd class="col-6">
+                        {% if student.group.teacher.userprofile.full_name %}
+                            {{ student.group.teacher.userprofile.full_name }}
+                        {% else %}
+                            {{ student.group.teacher.username }}
+                        {% endif %}
+                    </dd>
                 </dl>
             </div>
         </div>

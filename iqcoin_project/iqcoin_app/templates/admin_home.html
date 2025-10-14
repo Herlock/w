@@ -1,17 +1,18 @@
 {% extends 'base.html' %}
 
-{% block title %}Home - IQ-Coin Tracker{% endblock %}
+{% block title %}Административная панель - IQ-Coin Tracker{% endblock %}
 
 {% block content %}
 <div class="row">
     <div class="col-md-8">
-        <h2>Student Balances</h2>
+        <h2>Все ученики</h2>
         <div class="table-responsive">
             <table class="table table-striped">
                 <thead>
                     <tr>
                         <th>Имя</th>
-                        <th>Группа</th>
+                        <th>Класс</th>
+                        <th>Учитель</th>
                         <th>Баланс</th>
                     </tr>
                 </thead>
@@ -25,12 +26,19 @@
                         </td>
                         <td>{{ student.group.group }}</td>
                         <td>
+                            {% if student.group.teacher.userprofile.full_name %}
+                                {{ student.group.teacher.userprofile.full_name }}
+                            {% else %}
+                                {{ student.group.teacher.username }}
+                            {% endif %}
+                        </td>
+                        <td>
                             <span class="badge bg-primary">{{ student.balance }} Айкьюшек</span>
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="3" class="text-center">Студены не найдены</td>
+                        <td colspan="4" class="text-center">Ученики не найдены</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -39,44 +47,15 @@
     </div>
     
     <div class="col-md-4">
-        <h3>Быстрые действия:</h3>
+        <h3>Административные действия</h3>
         <div class="d-grid gap-2">
-            <a href="{% url 'award_coins' %}" class="btn btn-success">Наградить Айкьюшками</a>
-            <a href="{% url 'deduct_coins' %}" class="btn btn-warning">Списать айкьюшки</a>
-            <a href="{% url 'transaction_history' %}" class="btn btn-info">История начислений</a>
-            <a href="{% url 'student_list' %}" class="btn btn-primary">Управление учениками</a>
-            <a href="{% url 'class_list' %}" class="btn btn-secondary">Управление классами</a>
+            <a href="{% url 'transaction_history' %}" class="btn btn-info">Полная история начислений</a>
+            <a href="{% url 'student_list' %}" class="btn btn-primary">Управление всеми учениками</a>
+            <a href="{% url 'class_list' %}" class="btn btn-secondary">Управление всеми классами</a>
+            <a href="{% url 'admin:index' %}" class="btn btn-dark">Django Admin</a>
         </div>
         
-        <!-- Class Summary -->
-        {% if teacher_classes %}
-        <h4 class="mt-4">Мои классы ({{ teacher_classes|length }})</h4>
-        <h4 class="mt-4">Мои классы ({{ teacher_classes|length }})</h4>
-        <div class="list-group">
-            {% for class in teacher_classes %}
-            <a href="{% url 'class_detail' class.id %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-                <div>
-                    <h6 class="mb-1">{{ class.group }}</h6>
-                    <small class="text-muted">{{ class.student_set.count }} учеников</small>
-                </div>
-                <span class="badge bg-primary rounded-pill">{{ class.student_set.count }}</span>
-            </a>
-            {% endfor %}
-            {% if teacher_classes|length > 3 %}
-            <a href="{% url 'class_list' %}" class="list-group-item list-group-item-action text-center text-muted">
-                <small>Показать все {{ teacher_classes|length }} классов →</small>
-            </a>
-            {% endif %}
-        </div>
-        {% else %}
-        <div class="alert alert-info mt-4">
-            <h6 class="alert-heading">Пока нет классов</h6>
-            <p class="mb-2">Создайте свой первый класс для управления учениками и Айкьюшками.</p>
-            <a href="{% url 'class_create' %}" class="btn btn-primary btn-sm">Создать первый класс</a>
-        </div>
-        {% endif %}
-        
-        <h4 class="mt-4">История начислений</h4>
+        <h4 class="mt-4">Последние начисления</h4>
         <div class="list-group">
             {% for transaction in recent_transactions %}
             <div class="list-group-item {% if transaction.edited %}edited-transaction{% endif %}">
@@ -106,6 +85,12 @@
                 <p class="mb-1">Нет предыдущих начислений</p>
             </div>
             {% endfor %}
+        </div>
+        
+        <div class="alert alert-warning mt-4">
+            <h6 class="alert-heading">Административный доступ</h6>
+            <p>Как администратор, вы можете видеть всех учеников, классы и учителей.</p>
+            <p>Используйте Django Admin для управления пользователями и их ролями.</p>
         </div>
     </div>
 </div>

@@ -3,17 +3,17 @@
 {% block title %}Transaction History - IQ-Coin Tracker{% endblock %}
 
 {% block content %}
-<h2>Transaction History</h2>
+<h2>История транзакций</h2>
 
 <!-- Filters -->
 <div class="card mb-4">
     <div class="card-body">
-        <h5 class="card-title">Filters</h5>
+        <h5 class="card-title">Фильтры</h5>
         <form method="get" class="row g-3">
             <div class="col-md-3">
-                <label for="student" class="form-label">Student</label>
+                <label for="student" class="form-label">Ученик</label>
                 <select name="student" id="student" class="form-select">
-                    <option value="">All Students</option>
+                    <option value="">Все ученики</option>
                     {% for student in students %}
                         <option value="{{ student.id }}" {% if current_student == student.id|stringformat:"s" %}selected{% endif %}>
                             {{ student.name }} ({{ student.group }})
@@ -23,22 +23,22 @@
             </div>
             
             <div class="col-md-3">
-                <label for="type" class="form-label">Transaction Type</label>
+                <label for="type" class="form-label">Тип транзакции</label>
                 <select name="type" id="type" class="form-select">
-                    <option value="">All Types</option>
-                    <option value="AWARD" {% if current_type == "AWARD" %}selected{% endif %}>Awards</option>
-                    <option value="DEDUCT" {% if current_type == "DEDUCT" %}selected{% endif %}>Deductions</option>
+                    <option value="">Все типы</option>
+                    <option value="AWARD" {% if current_type == "AWARD" %}selected{% endif %}>Награды</option>
+                    <option value="DEDUCT" {% if current_type == "DEDUCT" %}selected{% endif %}>Списания</option>
                 </select>
             </div>
             
             <div class="col-md-4">
-                <label for="search" class="form-label">Search</label>
+                <label for="search" class="form-label">Поиск</label>
                 <input type="text" name="search" id="search" class="form-control" 
-                       value="{{ search_query }}" placeholder="Search by student, teacher, or comment...">
+                       value="{{ search_query }}" placeholder="Поиск по ученику, учителю или комментарию...">
             </div>
             
             <div class="col-md-2 d-flex align-items-end">
-                <button type="submit" class="btn btn-primary w-100">Filter</button>
+                <button type="submit" class="btn btn-primary w-100">Фильтр</button>
             </div>
         </form>
     </div>
@@ -49,13 +49,13 @@
     <table class="table table-striped">
         <thead>
             <tr>
-                <th>Date</th>
-                <th>Type</th>
-                <th>Student</th>
-                <th>Amount</th>
-                <th>Teacher</th>
-                <th>Comment</th>
-                <th>Actions</th>
+                <th>Дата</th>
+                <th>Тип</th>
+                <th>Ученик</th>
+                <th>Сумма</th>
+                <th>Учитель</th>
+                <th>Комментарий</th>
+                <th>Действия</th>
             </tr>
         </thead>
         <tbody>
@@ -73,7 +73,13 @@
                         {% if transaction.type == 'AWARD' %}+{% else %}-{% endif %}{{ transaction.amount }}
                     </span>
                 </td>
-                <td>{{ transaction.teacher.username }}</td>
+                <td>
+                    {% if transaction.teacher.userprofile.full_name %}
+                        {{ transaction.teacher.userprofile.full_name }}
+                    {% else %}
+                        {{ transaction.teacher.username }}
+                    {% endif %}
+                </td>
                 <td>
                     {% if transaction.comment %}
                         {{ transaction.comment|truncatechars:50 }}
@@ -84,17 +90,17 @@
                 <td>
                     {% if transaction.type == 'AWARD' %}
                         <a href="{% url 'edit_transaction' transaction.id %}" class="btn btn-sm btn-outline-primary">
-                            Edit
+                            Редактировать
                         </a>
                     {% endif %}
                     {% if transaction.edited %}
-                        <span class="badge bg-secondary">Edited</span>
+                        <span class="badge bg-secondary">Изменено</span>
                     {% endif %}
                 </td>
             </tr>
             {% empty %}
             <tr>
-                <td colspan="7" class="text-center">No transactions found.</td>
+                <td colspan="7" class="text-center">Транзакции не найдены.</td>
             </tr>
             {% endfor %}
         </tbody>
@@ -102,6 +108,6 @@
 </div>
 
 <div class="mt-3">
-    <a href="{% url 'home' %}" class="btn btn-secondary">Back to Home</a>
+    <a href="{% url 'home' %}" class="btn btn-secondary">Назад на главную</a>
 </div>
 {% endblock %}

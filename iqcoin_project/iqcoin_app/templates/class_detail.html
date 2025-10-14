@@ -138,7 +138,13 @@
                                 </h6>
                                 <p class="mb-1">
                                     <small class="text-muted">
-                                        by {{ transaction.teacher.username }} on {{ transaction.date|date:"M d, Y H:i" }}
+                                        by 
+                                        {% if transaction.teacher.userprofile.full_name %}
+                                            {{ transaction.teacher.userprofile.full_name }}
+                                        {% else %}
+                                            {{ transaction.teacher.username }}
+                                        {% endif %} 
+                                        on {{ transaction.date|date:"M d, Y H:i" }}
                                     </small>
                                 </p>
                                 {% if transaction.comment %}
@@ -206,7 +212,13 @@
                     <dd class="col-6">{{ class_obj.group }}</dd>
                     
                     <dt class="col-6">Teacher:</dt>
-                    <dd class="col-6">{{ class_obj.teacher.username }}</dd>
+                    <dd class="col-6">
+                        {% if class_obj.teacher.userprofile.full_name %}
+                            {{ class_obj.teacher.userprofile.full_name }}
+                        {% else %}
+                            {{ class_obj.teacher.username }}
+                        {% endif %}
+                    </dd>
                 </dl>
                 
                 {% if students %}

@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}Мой профиль - IQ-Coin Tracker{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h2>Мой профиль</h2>
+        <div class="card">
+            <div class="card-body">
+                <h3>{{ student.name }}</h3>
+                <p><strong>Класс:</strong> {{ student.group.group }}</p>
+                <p><strong>Учитель:</strong> {{ student.group.teacher.username }}</p>
+                <p><strong>Баланс Айкьюшек:</strong> <span class="badge bg-primary">{{ student.balance }} Айкьюшек</span></p>
+            </div>
+        </div>
+        
+        <h3 class="mt-4">Мои начисления</h3>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Дата</th>
+                        <th>Тип</th>
+                        <th>Количество</th>
+                        <th>Учитель</th>
+                        <th>Комментарий</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for transaction in recent_transactions %}
+                    <tr>
+                        <td>{{ transaction.date|date:"M d, Y" }}</td>
+                        <td>
+                            <span class="badge bg-{% if transaction.type == 'AWARD' %}success{% else %}warning{% endif %}">
+                                {{ transaction.get_type_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="transaction-{{ transaction.type|lower }}">
+                                {% if transaction.type == 'AWARD' %}+{% else %}-{% endif %}{{ transaction.amount }}
+                            </span>
+                        </td>
+                        <td>{{ transaction.teacher.username }}</td>
+                        <td>{{ transaction.comment|default:"-" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center">Нет начислений</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="alert alert-info">
+            <h4>Информация</h4>
+            <p>Как студент, вы можете просматривать только свои начисления и баланс Айкьюшек.</p>
+            <p>Для получения Айкьюшек обратитесь к своему учителю.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
