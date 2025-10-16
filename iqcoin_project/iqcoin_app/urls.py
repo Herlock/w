@@ -6,7 +6,8 @@ urlpatterns = [
     path('', views.home, name='home'),
     path('login/', views.user_login, name='login'),
     path('student-login/', views.student_login, name='student_login'),
-    path('logout/', LogoutView.as_view(), name='logout'),
+    # Разрешаем GET-запросы для выхода
+    path('logout/', LogoutView.as_view(next_page='home'), name='logout'),
     path('award-coins/', views.award_coins, name='award_coins'),
     path('deduct-coins/', views.deduct_coins, name='deduct_coins'),
     path('transaction-history/', views.transaction_history, name='transaction_history'),
