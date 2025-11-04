@@ -35,6 +35,8 @@ class Student(models.Model):
     phone_number = models.CharField(max_length=15, unique=True, blank=True, null=True)
     # Flag to indicate if student account is active
     is_active = models.BooleanField(default=True)
+    # Flag to hide student from general lists (home page, award/deduct forms)
+    is_hidden = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.name} ({self.group.group})"

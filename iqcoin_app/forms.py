@@ -10,7 +10,8 @@ class AwardCoinsForm(forms.Form):
         super().__init__(*args, **kwargs)
         if user:
             # Only show students from classes taught by the current teacher
-            self.fields['students'].queryset = Student.objects.filter(group__teacher=user)
+            # Exclude hidden students from award form
+            self.fields['students'].queryset = Student.objects.filter(group__teacher=user, is_hidden=False)
 
 class DeductCoinsForm(forms.Form):
     student = forms.ModelChoiceField(queryset=Student.objects.none(), label="Student")
@@ -22,7 +23,8 @@ class DeductCoinsForm(forms.Form):
         super().__init__(*args, **kwargs)
         if user:
             # Only show students from classes taught by the current teacher
-            self.fields['student'].queryset = Student.objects.filter(group__teacher=user)
+            # Exclude hidden students from deduct form
+            self.fields['student'].queryset = Student.objects.filter(group__teacher=user, is_hidden=False)
 
 class EditTransactionForm(forms.ModelForm):
     class Meta:
@@ -52,13 +54,14 @@ class StudentForm(forms.ModelForm):
 class StudentEditForm(forms.ModelForm):
     class Meta:
         model = Student
-        fields = ['name', 'group', 'balance', 'phone_number', 'is_active']
+        fields = ['name', 'group', 'balance', 'phone_number', 'is_active', 'is_hidden']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter student name'}),
             'group': forms.Select(attrs={'class': 'form-control'}),
             'balance': forms.NumberInput(attrs={'class': 'form-control', 'min': 0}),
             'phone_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter phone number (e.g., +79991234567)'}),
             'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'is_hidden': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
         labels = {
             'name': 'Student Name',
@@ -66,6 +69,7 @@ class StudentEditForm(forms.ModelForm):
             'balance': 'IQ-coin Balance',
             'phone_number': 'Phone Number',
             'is_active': 'Active Student',
+            'is_hidden': 'Hide from General Lists',
         }
     
     def __init__(self, *args, **kwargs):

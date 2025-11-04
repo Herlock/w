@@ -8,7 +8,12 @@
         <!-- Student Information Card -->
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h4 class="mb-0">{{ student.name }}</h4>
+                <h4 class="mb-0">
+                    {{ student.name }}
+                    {% if student.is_hidden %}
+                        <span class="badge bg-warning text-dark ms-2">Скрыт</span>
+                    {% endif %}
+                </h4>
                 <div class="btn-group" role="group">
                     <a href="{% url 'student_edit' student.id %}" class="btn btn-warning btn-sm">
                         Изменить

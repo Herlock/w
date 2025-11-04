@@ -78,7 +78,8 @@ def home(request):
         return render(request, 'student_home.html', context)
     elif user_profile.role == 'teacher':
         # Teacher view - show only their students and classes
-        students = Student.objects.filter(group__teacher=request.user).order_by('group', 'name')
+        # Exclude hidden students from home page
+        students = Student.objects.filter(group__teacher=request.user, is_hidden=False).order_by('group', 'name')
         recent_transactions = Transaction.objects.filter(teacher=request.user).order_by('-date')[:10]
         teacher_classes = Class.objects.filter(teacher=request.user).order_by('group')
         
@@ -90,7 +91,8 @@ def home(request):
         return render(request, 'teacher_home.html', context)
     elif user_profile.role == 'admin':
         # Admin view - show all students with their classes and teachers
-        students = Student.objects.all().order_by('group', 'name')
+        # Exclude hidden students from home page
+        students = Student.objects.filter(is_hidden=False).order_by('group', 'name')
         recent_transactions = Transaction.objects.all().order_by('-date')[:10]
         
         context = {
@@ -295,10 +297,10 @@ def student_list(request):
         # Students can only see themselves
         students = Student.objects.filter(id=user_profile.student.id) if user_profile.student else Student.objects.none()
     elif user_profile.role == 'teacher':
-        # Teachers can only see their own students
+        # Teachers can only see their own students (all students, including hidden - this is the management page)
         students = Student.objects.filter(group__teacher=request.user).order_by('group', 'name')
     elif user_profile.role == 'admin':
-        # Admins can see all students
+        # Admins can see all students (including hidden - this is the management page)
         students = Student.objects.all().order_by('group', 'name')
     else:
         # Default: teachers can only see their own students
@@ -307,10 +309,21 @@ def student_list(request):
     # Get search query
     search_query = request.GET.get('search')
     if search_query:
-        students = students.filter(
-            Q(name__icontains=search_query) |
-            Q(group__group__icontains=search_query)
-        )
+        # Enhanced search for administrators - include phone number and teacher name
+        if user_profile.role == 'admin':
+            students = students.filter(
+                Q(name__icontains=search_query) |
+                Q(group__group__icontains=search_query) |
+                Q(phone_number__icontains=search_query) |
+                Q(group__teacher__username__icontains=search_query) |
+                Q(group__teacher__userprofile__full_name__icontains=search_query)
+            )
+        else:
+            # Regular search for teachers
+            students = students.filter(
+                Q(name__icontains=search_query) |
+                Q(group__group__icontains=search_query)
+            )
     
     context = {
         'students': students,

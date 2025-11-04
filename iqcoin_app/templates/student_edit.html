@@ -81,6 +81,36 @@
                         </div>
                     </div>
                     
+                    <div class="mb-3 form-check">
+                        {{ form.is_active }}
+                        <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                            {{ form.is_active.label }}
+                        </label>
+                        {% if form.is_active.errors %}
+                            <div class="text-danger">
+                                {{ form.is_active.errors }}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">
+                            Uncheck to deactivate the student account.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3 form-check">
+                        {{ form.is_hidden }}
+                        <label class="form-check-label" for="{{ form.is_hidden.id_for_label }}">
+                            {{ form.is_hidden.label }}
+                        </label>
+                        {% if form.is_hidden.errors %}
+                            <div class="text-danger">
+                                {{ form.is_hidden.errors }}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">
+                            Hidden students won't appear on the home page or in award/deduct forms, but will remain visible in student management.
+                        </div>
+                    </div>
+                    
                     <div class="mb-3">
                         <div class="card bg-light">
                             <div class="card-body">

@@ -175,6 +175,38 @@
         .text-warning {
             color: var(--primary-yellow) !important;
         }
+
+        /* Logout button styling to match nav links */
+        .logout-btn {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.55);
+            font-size: 1rem;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            text-decoration: none;
+            transition: color 0.15s ease-in-out;
+        }
+        .logout-btn:hover {
+            color: rgba(255, 255, 255, 0.75);
+        }
+
+        /* Mobile menu improvements */
+        @media (max-width: 991.98px) {
+            .navbar-text {
+                display: block;
+                padding: 0.5rem 1rem;
+                margin-right: 0 !important;
+            }
+            .logout-btn {
+                width: 100%;
+                text-align: left;
+                display: block;
+            }
+            .navbar-nav {
+                align-items: flex-start !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -182,28 +214,35 @@
         <div class="container">
             <a class="navbar-brand" href="{% url 'home' %}">🪙 Счетчик Айкьюшек</a>
             {% if user.is_authenticated %}
-            <div class="navbar-nav ms-auto">
-                <a class="nav-link" href="{% url 'home' %}">Главная</a>
-                <a class="nav-link" href="{% url 'class_list' %}">Классы</a>
-                <a class="nav-link" href="{% url 'student_list' %}">Ученики</a>
-                <a class="nav-link" href="{% url 'award_coins' %}">Наградить</a>
-                <a class="nav-link" href="{% url 'deduct_coins' %}">Списать</a>
-                <a class="nav-link" href="{% url 'transaction_history' %}">History</a>
-                {% if user.userprofile.role == 'admin' %}
-                <a class="nav-link" href="{% url 'admin:index' %}">Admin</a>
-                {% endif %}
-                <span class="navbar-text me-3">
-                    Добро пожаловать, 
-                    {% if user.userprofile.full_name %}
-                        {{ user.userprofile.full_name }}
-                    {% else %}
-                        {{ user.username }}
-                    {% endif %}!
-                </span>
-                <form method="post" action="{% url 'logout' %}" style="display: inline;">
-                    {% csrf_token %}
-                    <button type="submit" class="logout-btn">Выйти</button>
-                </form>
+            <!-- Hamburger button for mobile -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <!-- Collapsible navbar content -->
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <div class="navbar-nav ms-auto">
+                    <a class="nav-link" href="{% url 'home' %}">Главная</a>
+                    <a class="nav-link" href="{% url 'class_list' %}">Классы</a>
+                    <a class="nav-link" href="{% url 'student_list' %}">Ученики</a>
+                    <a class="nav-link" href="{% url 'award_coins' %}">Наградить</a>
+                    <a class="nav-link" href="{% url 'deduct_coins' %}">Списать</a>
+                    <a class="nav-link" href="{% url 'transaction_history' %}">History</a>
+                    {% if user.userprofile.role == 'admin' %}
+                    <a class="nav-link" href="{% url 'admin:index' %}">Admin</a>
+                    {% endif %}
+                    <span class="navbar-text me-3">
+                        Добро пожаловать, 
+                        {% if user.userprofile.full_name %}
+                            {{ user.userprofile.full_name }}
+                        {% else %}
+                            {{ user.username }}
+                        {% endif %}!
+                    </span>
+                    <form method="post" action="{% url 'logout' %}" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="logout-btn">Выйти</button>
+                    </form>
+                </div>
             </div>
             {% endif %}
         </div>

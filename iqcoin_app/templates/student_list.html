@@ -12,10 +12,10 @@
 
 <!-- Search Form -->
 <div class="row mb-4">
-    <div class="col-md-6">
+    <div class="col-md-8">
         <form method="GET" class="d-flex">
             <input type="text" name="search" class="form-control me-2" 
-                   placeholder="Поиск учеников или классов..." 
+                   placeholder="{% if user.userprofile.role == 'admin' %}Поиск по имени, классу, телефону или учителю...{% else %}Поиск учеников или классов...{% endif %}" 
                    value="{{ search_query }}"
                    aria-label="Поиск учеников">
             <button class="btn btn-outline-secondary" type="submit">Поиск</button>
@@ -36,6 +36,10 @@
                         <tr>
                             <th>Имя</th>
                             <th>Класс</th>
+                            {% if user.userprofile.role == 'admin' %}
+                            <th>Учитель</th>
+                            <th>Телефон</th>
+                            {% endif %}
                             <th>Баланс</th>
                             <th>Действия</th>
                         </tr>
@@ -45,10 +49,33 @@
                         <tr class="clickable-row" style="cursor: pointer;" onclick="window.location='{% url 'student_detail' student.id %}'">
                             <td>
                                 <strong>{{ student.name }}</strong>
+                                {% if student.is_hidden %}
+                                    <span class="badge bg-warning text-dark ms-2">Скрыт</span>
+                                {% endif %}
                             </td>
                             <td>
                                 <span class="badge bg-secondary">{{ student.group.group }}</span>
                             </td>
+                            {% if user.userprofile.role == 'admin' %}
+                            <td>
+                                <small class="text-muted">
+                                    {% if student.group.teacher.userprofile.full_name %}
+                                        {{ student.group.teacher.userprofile.full_name }}
+                                    {% else %}
+                                        {{ student.group.teacher.username }}
+                                    {% endif %}
+                                </small>
+                            </td>
+                            <td>
+                                <small class="text-muted">
+                                    {% if student.phone_number %}
+                                        {{ student.phone_number }}
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </small>
+                            </td>
+                            {% endif %}
                             <td>
                                 <span class="badge bg-{% if student.balance > 0 %}primary{% elif student.balance == 0 %}secondary{% else %}danger{% endif %}">
                                     {{ student.balance }} IQ-coins
