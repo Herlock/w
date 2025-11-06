@@ -3,11 +3,15 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'vyil&^rhwv4bwb-fauc8zlhdnleo0#oxfj2_u1#d-e*p7+rz'
+# SECURITY WARNING: keep the secret key used in production secret!
+# For production, you should move this to an environment variable
+SECRET_KEY = os.environ.get('SECRET_KEY', 'vyil&^rhwv4bwb-fauc8zlhdnleo0#oxfj2_u1#d-e*p7+rz')
 
+# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['herlockS.pythonanywhere.com', '127.0.0.1']
+# Update this to include your PythonAnywhere hostname
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]', '.pythonanywhere.com']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -49,6 +53,8 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'iqcoin_project.wsgi.application'
 
+# Database configuration for PythonAnywhere
+# You'll need to update this when you set up your database on PythonAnywhere
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -84,11 +90,11 @@ USE_I18N = True
 
 USE_TZ = True
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/login/'
-
