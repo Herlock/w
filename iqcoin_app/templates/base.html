@@ -222,11 +222,13 @@
             <div class="collapse navbar-collapse" id="navbarContent">
                 <div class="navbar-nav ms-auto">
                     <a class="nav-link" href="{% url 'home' %}">Главная</a>
+                    {% if user.userprofile.role != 'student' %}
                     <a class="nav-link" href="{% url 'class_list' %}">Классы</a>
                     <a class="nav-link" href="{% url 'student_list' %}">Ученики</a>
                     <a class="nav-link" href="{% url 'award_coins' %}">Наградить</a>
                     <a class="nav-link" href="{% url 'deduct_coins' %}">Списать</a>
-                    <a class="nav-link" href="{% url 'transaction_history' %}">History</a>
+                    {% endif %}
+                    <a class="nav-link" href="{% url 'transaction_history' %}">История</a>
                     {% if user.userprofile.role == 'admin' %}
                     <a class="nav-link" href="{% url 'admin:index' %}">Admin</a>
                     {% endif %}

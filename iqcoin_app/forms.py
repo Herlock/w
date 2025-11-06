@@ -9,9 +9,21 @@ class AwardCoinsForm(forms.Form):
         user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
         if user:
-            # Only show students from classes taught by the current teacher
-            # Exclude hidden students from award form
-            self.fields['students'].queryset = Student.objects.filter(group__teacher=user, is_hidden=False)
+            # Check if user is admin
+            try:
+                user_profile = user.userprofile
+                if user_profile.role == 'admin':
+                    # Admins can award coins to all students
+                    # Exclude hidden students from award form
+                    self.fields['students'].queryset = Student.objects.filter(is_hidden=False)
+                else:
+                    # Teachers can only award coins to their own students
+                    # Exclude hidden students from award form
+                    self.fields['students'].queryset = Student.objects.filter(group__teacher=user, is_hidden=False)
+            except:
+                # Default: only show students from classes taught by the current teacher
+                # Exclude hidden students from award form
+                self.fields['students'].queryset = Student.objects.filter(group__teacher=user, is_hidden=False)
 
 class DeductCoinsForm(forms.Form):
     student = forms.ModelChoiceField(queryset=Student.objects.none(), label="Student")
@@ -22,9 +34,21 @@ class DeductCoinsForm(forms.Form):
         user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
         if user:
-            # Only show students from classes taught by the current teacher
-            # Exclude hidden students from deduct form
-            self.fields['student'].queryset = Student.objects.filter(group__teacher=user, is_hidden=False)
+            # Check if user is admin
+            try:
+                user_profile = user.userprofile
+                if user_profile.role == 'admin':
+                    # Admins can deduct coins from all students
+                    # Exclude hidden students from deduct form
+                    self.fields['student'].queryset = Student.objects.filter(is_hidden=False)
+                else:
+                    # Teachers can only deduct coins from their own students
+                    # Exclude hidden students from deduct form
+                    self.fields['student'].queryset = Student.objects.filter(group__teacher=user, is_hidden=False)
+            except:
+                # Default: only show students from classes taught by the current teacher
+                # Exclude hidden students from deduct form
+                self.fields['student'].queryset = Student.objects.filter(group__teacher=user, is_hidden=False)
 
 class EditTransactionForm(forms.ModelForm):
     class Meta:
