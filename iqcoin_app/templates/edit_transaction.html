@@ -1,57 +1,49 @@
 {% extends 'base.html' %}
 
-{% block title %}Edit Transaction - IQ-Coin Tracker{% endblock %}
+{% block title %}Редактировать транзакцию{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h3>Редактировать транзакцию</h3>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <h2>Редактировать транзакцию</h2>
+            
+            <div class="card mb-4">
+                <div class="card-body">
+                    <p><strong>Тип:</strong> 
+                        {% if transaction.type == 'AWARD' %}
+                            <span class="badge bg-success">Награда</span>
+                        {% else %}
+                            <span class="badge bg-danger">Вычет</span>
+                        {% endif %}
+                    </p>
+                    <p><strong>Студент:</strong> {{ transaction.student.name }}</p>
+                    <p><strong>Группа:</strong> {{ transaction.student.group.group }}</p>
+                    <p><strong>Преподаватель:</strong> {{ transaction.teacher.username }}</p>
+                    <p><strong>Дата:</strong> {{ transaction.date|date:"d.m.Y H:i" }}</p>
+                    {% if transaction.comment %}
+                        <p><strong>Комментарий:</strong> {{ transaction.comment }}</p>
+                    {% endif %}
+                </div>
             </div>
-            <div class="card-body">
-                <div class="alert alert-info">
-                    <strong>Детали транзакции:</strong><br>
-                    Ученик: {{ transaction.student.name }}<br>
-                    Исходная сумма: {{ transaction.amount }} Айкьюшек<br>
-                    Дата: {{ transaction.date|date:"M d, Y H:i" }}<br>
-                    Учитель: {{ transaction.teacher.username }}
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="{{ form.amount.id_for_label }}" class="form-label">Сумма</label>
+                    {{ form.amount }}
+                    {% if form.amount.help_text %}
+                        <div class="form-text">{{ form.amount.help_text }}</div>
+                    {% endif %}
+                    {% if form.amount.errors %}
+                        <div class="alert alert-danger">{{ form.amount.errors }}</div>
+                    {% endif %}
                 </div>
                 
-                <form method="post">
-                    {% csrf_token %}
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.amount.id_for_label }}" class="form-label">
-                            Новая сумма (1-3 Айкьюшки)
-                        </label>
-                        {{ form.amount }}
-                        {% if form.amount.errors %}
-                            <div class="text-danger">{{ form.amount.errors }}</div>
-                        {% endif %}
-                        <div class="form-text">
-                            Текущая сумма: {{ transaction.amount }} Айкьюшек. 
-                            Баланс ученика будет автоматически скорректирован.
-                        </div>
-                    </div>
-                    
-                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                        <a href="{% url 'transaction_history' %}" class="btn btn-secondary">Отмена</a>
-                        <button type="submit" class="btn btn-primary">Обновить транзакцию</button>
-                    </div>
-                </form>
-            </div>
+                <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+                <a href="{% url 'transaction_history' %}" class="btn btn-secondary">Отмена</a>
+            </form>
         </div>
     </div>
 </div>
-
-<script>
-// Add Bootstrap classes to form elements
-document.addEventListener('DOMContentLoaded', function() {
-    const inputElements = document.querySelectorAll('input[type="number"]');
-    inputElements.forEach(function(input) {
-        input.classList.add('form-control');
-    });
-});
-</script>
 {% endblock %}

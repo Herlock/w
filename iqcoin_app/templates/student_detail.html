@@ -1,201 +1,89 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ student.name }} - IQ-Coin Tracker{% endblock %}
+{% block title %}Детали студента{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-8">
-        <!-- Student Information Card -->
-        <div class="card mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h4 class="mb-0">
-                    {{ student.name }}
-                    {% if student.is_hidden %}
-                        <span class="badge bg-warning text-dark ms-2">Скрыт</span>
+<div class="container">
+    <div class="row">
+        <div class="col-md-8">
+            <h2>{{ student.name }}</h2>
+            
+            <dl class="row">
+                <dt class="col-sm-4">Баланс:</dt>
+                <dd class="col-sm-8">
+                    <span class="badge bg-warning text-dark">{{ student.balance }} IQ</span>
+                    {% if student.balance < 0 %}
+                        <span class="badge bg-danger">Отрицательный баланс</span>
                     {% endif %}
-                </h4>
-                <div class="btn-group" role="group">
-                    <a href="{% url 'student_edit' student.id %}" class="btn btn-warning btn-sm">
-                        Изменить
-                    </a>
-                    <a href="{% url 'student_list' %}" class="btn btn-secondary btn-sm">
-                        Назад к списку
-                    </a>
-                </div>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <dl class="row">
-                            <dt class="col-sm-4">Имя:</dt>
-                            <dd class="col-sm-8">{{ student.name }}</dd>
-                            
-                            <dt class="col-sm-4">Класс:</dt>
-                            <dd class="col-sm-8">
-                                <span class="badge bg-secondary">{{ student.group.group }}</span>
-                            </dd>
-                            
-                            <dt class="col-sm-4">Учитель:</dt>
-                            <dd class="col-sm-8">
-                                {% if student.group.teacher.userprofile.full_name %}
-                                    {{ student.group.teacher.userprofile.full_name }}
-                                {% else %}
-                                    {{ student.group.teacher.username }}
-                                {% endif %}
-                            </dd>
-                        </dl>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="text-center">
-                            <h2 class="display-4 mb-2">
-                                <span class="badge bg-{% if student.balance > 0 %}primary{% elif student.balance == 0 %}secondary{% else %}danger{% endif %}">
-                                    {{ student.balance }}
-                                </span>
-                            </h2>
-                            <p class="text-muted">Баланс Айкьюшек</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                </dd>
+                
+                <dt class="col-sm-4">Группа:</dt>
+                <dd class="col-sm-8">{{ student.group.group }}</dd>
+                
+                <dt class="col-sm-4">Преподаватель:</dt>
+                <dd class="col-sm-8">{{ student.group.teacher.username }}</dd>
+                
+                <dt class="col-sm-4">Номер телефона:</dt>
+                <dd class="col-sm-8">{{ student.phone_number|default:"Не указан" }}</dd>
+                
+                <dt class="col-sm-4">Статус:</dt>
+                <dd class="col-sm-8">
+                    {% if student.is_active %}
+                        <span class="badge bg-success">Активен</span>
+                    {% else %}
+                        <span class="badge bg-secondary">Неактивен</span>
+                    {% endif %}
+                </dd>
+                
+                <dt class="col-sm-4">Скрыт:</dt>
+                <dd class="col-sm-8">
+                    {% if student.is_hidden %}
+                        <span class="badge bg-secondary">Да</span>
+                    {% else %}
+                        <span class="badge bg-success">Нет</span>
+                    {% endif %}
+                </dd>
+            </dl>
+            
+            {% if user.userprofile.role == 'teacher' and student.group.teacher == user or user.userprofile.role == 'admin' %}
+                <a href="{% url 'student_edit' student.id %}" class="btn btn-primary">Редактировать</a>
+            {% endif %}
         </div>
         
-        <!-- Recent Transactions -->
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Прошлые транзакции</h5>
-                <a href="{% url 'transaction_history' %}?student={{ student.id }}" class="btn btn-outline-primary btn-sm">
-                    Показать все
-                </a>
-            </div>
-            <div class="card-body">
-                {% if recent_transactions %}
-                    <div class="list-group list-group-flush">
-                        {% for transaction in recent_transactions %}
-                        <div class="list-group-item d-flex justify-content-between align-items-center {% if transaction.edited %}edited-transaction{% endif %}">
-                            <div>
-                                <h6 class="mb-1">
-                                    <span class="transaction-{{ transaction.type|lower }}">
-                                        {% if transaction.type == 'AWARD' %}
-                                            <i class="bi bi-plus-circle"></i> +{{ transaction.amount }}
-                                        {% else %}
-                                            <i class="bi bi-dash-circle"></i> -{{ transaction.amount }}
-                                        {% endif %}
-                                    </span>
-                                    айкьюшки
-                                </h6>
-                                <p class="mb-1">
-                                    <small class="text-muted">
-                                        by 
-                                        {% if transaction.teacher.userprofile.full_name %}
-                                            {{ transaction.teacher.userprofile.full_name }}
-                                        {% else %}
-                                            {{ transaction.teacher.username }}
-                                        {% endif %} 
-                                        on {{ transaction.date|date:"M d, Y H:i" }}
-                                    </small>
-                                </p>
-                                {% if transaction.comment %}
-                                    <p class="mb-0">
-                                        <small class="text-muted">{{ transaction.comment }}</small>
-                                    </p>
-                                {% endif %}
-                                {% if transaction.edited %}
-                                    <small class="badge bg-warning text-dark">Исправлен</small>
-                                {% endif %}
+        <div class="col-md-4">
+            <h3>Последние транзакции</h3>
+            {% if recent_transactions %}
+                <div class="list-group">
+                    {% for transaction in recent_transactions %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between">
+                                <strong>
+                                    {% if transaction.type == 'AWARD' %}
+                                        Награда
+                                    {% else %}
+                                        Вычет
+                                    {% endif %}
+                                </strong>
+                                <span class="badge {% if transaction.type == 'AWARD' %}bg-success{% else %}bg-danger{% endif %}">
+                                    {{ transaction.amount }}
+                                </span>
                             </div>
-                            {% if transaction.type == 'AWARD' %}
-                                <a href="{% url 'edit_transaction' transaction.id %}" class="btn btn-outline-secondary btn-sm">
-                                    Изменить
-                                </a>
+                            <small class="text-muted">
+                                {{ transaction.date|date:"d.m.Y H:i" }}<br>
+                                Преподаватель: {{ transaction.teacher.username }}
+                            </small>
+                            {% if transaction.comment %}
+                                <div class="mt-1">
+                                    <small>{{ transaction.comment }}</small>
+                                </div>
                             {% endif %}
                         </div>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <div class="text-center py-4">
-                        <p class="text-muted">Не найдено транзакций по заданному ученику</p>
-                        <a href="{% url 'award_coins' %}" class="btn btn-primary btn-sm">Award First Coins</a>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-    
-    <!-- Quick Actions Sidebar -->
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-header">
-                <h6 class="mb-0">Quick Actions</h6>
-            </div>
-            <div class="card-body">
-                <div class="d-grid gap-2">
-                    <a href="{% url 'award_coins' %}" class="btn btn-success">
-                        <i class="bi bi-plus-circle"></i> Award Coins
-                    </a>
-                    <a href="{% url 'deduct_coins' %}" class="btn btn-warning">
-                        <i class="bi bi-dash-circle"></i> Deduct Coins
-                    </a>
-                    <a href="{% url 'student_edit' student.id %}" class="btn btn-info">
-                        <i class="bi bi-pencil"></i> Edit Student
-                    </a>
-                    <a href="{% url 'transaction_history' %}?student={{ student.id }}" class="btn btn-outline-secondary">
-                        <i class="bi bi-clock-history"></i> Full History
-                    </a>
+                    {% endfor %}
                 </div>
-            </div>
-        </div>
-        
-        <!-- Student Statistics -->
-        <div class="card mt-4">
-            <div class="card-header">
-                <h6 class="mb-0">Statistics</h6>
-            </div>
-            <div class="card-body">
-                <dl class="row">
-                    <dt class="col-6">Current Balance:</dt>
-                    <dd class="col-6">
-                        <span class="badge bg-{% if student.balance > 0 %}success{% elif student.balance == 0 %}secondary{% else %}danger{% endif %}">
-                            {{ student.balance }} IQ-coins
-                        </span>
-                    </dd>
-                    
-                    <dt class="col-6">Recent Transactions:</dt>
-                    <dd class="col-6">{{ recent_transactions|length }}</dd>
-                    
-                    <dt class="col-6">Class:</dt>
-                    <dd class="col-6">
-                        <span class="badge bg-info">{{ student.group.group }}</span>
-                    </dd>
-                    
-                    <dt class="col-6">Teacher:</dt>
-                    <dd class="col-6">
-                        {% if student.group.teacher.userprofile.full_name %}
-                            {{ student.group.teacher.userprofile.full_name }}
-                        {% else %}
-                            {{ student.group.teacher.username }}
-                        {% endif %}
-                    </dd>
-                </dl>
-            </div>
+            {% else %}
+                <p class="text-muted">Транзакции не найдены</p>
+            {% endif %}
         </div>
     </div>
 </div>
-
-<style>
-.edited-transaction {
-    background-color: #fff3cd;
-}
-
-.transaction-award {
-    color: #198754;
-}
-
-.transaction-deduct {
-    color: #dc3545;
-}
-
-.display-4 {
-    font-weight: bold;
-}
-</style>
 {% endblock %}

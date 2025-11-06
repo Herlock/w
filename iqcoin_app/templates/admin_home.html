@@ -1,118 +1,62 @@
 {% extends 'base.html' %}
 
-{% block title %}Административная панель - IQ-Coin Tracker{% endblock %}
+{% block title %}Панель администратора{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-8">
-        <h2>Все ученики</h2>
-        <div class="table-responsive">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>Имя</th>
-                        <th>Класс</th>
-                        <th>Учитель</th>
-                        <th>Баланс</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for student in students %}
-                    <tr class="clickable-row" style="cursor: pointer;" onclick="window.location='{% url 'student_detail' student.id %}'">
-                        <td>
-                            <a href="{% url 'student_detail' student.id %}" class="text-decoration-none">
-                                {{ student.name }}
-                            </a>
-                        </td>
-                        <td>{{ student.group.group }}</td>
-                        <td>
-                            {% if student.group.teacher.userprofile.full_name %}
-                                {{ student.group.teacher.userprofile.full_name }}
-                            {% else %}
-                                {{ student.group.teacher.username }}
-                            {% endif %}
-                        </td>
-                        <td>
-                            <span class="badge bg-primary">{{ student.balance }} Айкьюшек</span>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="4" class="text-center">Ученики не найдены</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-    
-    <div class="col-md-4">
-        <h3>Административные действия</h3>
-        <div class="d-grid gap-2">
-            <a href="{% url 'award_coins' %}" class="btn btn-success">Наградить Айкьюшками</a>
-            <a href="{% url 'deduct_coins' %}" class="btn btn-warning">Списать айкьюшки</a>
-            <a href="{% url 'transaction_history' %}" class="btn btn-info">Полная история начислений</a>
-            <a href="{% url 'student_list' %}" class="btn btn-primary">Управление всеми учениками</a>
-            <a href="{% url 'class_list' %}" class="btn btn-secondary">Управление всеми классами</a>
-            <a href="{% url 'admin:index' %}" class="btn btn-dark">Django Admin</a>
-        </div>
-        
-        <h4 class="mt-4">Последние начисления</h4>
-        <div class="list-group">
-            {% for transaction in recent_transactions %}
-            <div class="list-group-item {% if transaction.edited %}edited-transaction{% endif %}">
-                <div class="d-flex w-100 justify-content-between">
-                    <h6 class="mb-1">
-                        <span class="transaction-{{ transaction.type|lower }}">
-                            {% if transaction.type == 'AWARD' %}+{% else %}-{% endif %}{{ transaction.amount }}
-                        </span>
-                        {{ transaction.student.name }}
-                    </h6>
-                    <small>{{ transaction.date|date:"M d, H:i" }}</small>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8">
+            <h2>Последние транзакции</h2>
+            {% if recent_transactions %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Тип</th>
+                                <th>Сумма</th>
+                                <th>Студент</th>
+                                <th>Группа</th>
+                                <th>Преподаватель</th>
+                                <th>Дата</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for transaction in recent_transactions %}
+                            <tr>
+                                <td>
+                                    {% if transaction.type == 'AWARD' %}
+                                        <span class="badge bg-success">Награда</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Вычет</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ transaction.amount }}</td>
+                                <td>{{ transaction.student.name }}</td>
+                                <td>{{ transaction.student.group.group }}</td>
+                                <td>{{ transaction.teacher.username }}</td>
+                                <td>{{ transaction.date|date:"d.m.Y H:i" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
-                <p class="mb-1">
-                    By 
-                    {% if transaction.teacher.userprofile.full_name %}
-                        {{ transaction.teacher.userprofile.full_name }}
-                    {% else %}
-                        {{ transaction.teacher.username }}
-                    {% endif %}
-                </p>
-                {% if transaction.edited %}
-                <small class="text-muted">Edited</small>
-                {% endif %}
-            </div>
-            {% empty %}
-            <div class="list-group-item">
-                <p class="mb-1">Нет предыдущих начислений</p>
-            </div>
-            {% endfor %}
+            {% else %}
+                <p class="text-muted">Транзакции не найдены</p>
+            {% endif %}
         </div>
-        
-        <div class="alert alert-warning mt-4">
-            <h6 class="alert-heading">Административный доступ</h6>
-            <p>Как администратор, вы можете видеть всех учеников, классы и учителей.</p>
-            <p>Используйте Django Admin для управления пользователями и их ролями.</p>
+        <div class="col-md-4">
+            <h3>Статистика</h3>
+            <ul class="list-group">
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Всего студентов
+                    <span class="badge bg-primary rounded-pill">{{ students.count }}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Активных студентов
+                    <span class="badge bg-success rounded-pill">{{ students|length }}</span>
+                </li>
+            </ul>
         </div>
     </div>
 </div>
-
-<style>
-.clickable-row:hover {
-    background-color: #f8f9fa;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    transition: all 0.2s ease;
-}
-
-.clickable-row a {
-    color: inherit;
-    font-weight: 500;
-}
-
-.clickable-row a:hover {
-    color: #0066cc;
-    text-decoration: underline !important;
-}
-</style>
 {% endblock %}
