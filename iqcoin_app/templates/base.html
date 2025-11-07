@@ -81,11 +81,11 @@
                 <ul class="navbar-nav">
                     {% if user.is_authenticated %}
                         <li class="nav-item">
-                            <span class="navbar-text me-3">
+                            <span class="navbar-text d-flex me-3">
                                 {% if user.userprofile.role == 'student' and user.userprofile.student %}
                                     <span class="coin-balance">Баланс: {{ user.userprofile.student.balance }} IQ</span>
                                 {% endif %}
-                                Привет, {{ user.get_username }}{% if user.userprofile.full_name %} ({{ user.userprofile.full_name }}){% endif %}!
+                                Привет, {% if user.userprofile.full_name %} ({{ user.userprofile.full_name }}){% endif %}!
                             </span>
                         </li>
                         <li class="nav-item">
