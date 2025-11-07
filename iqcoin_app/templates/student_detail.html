@@ -17,11 +17,8 @@
                     {% endif %}
                 </dd>
                 
-                <dt class="col-sm-4">Группа:</dt>
-                <dd class="col-sm-8">{{ student.group.group }}</dd>
-                
                 <dt class="col-sm-4">Преподаватель:</dt>
-                <dd class="col-sm-8">{{ student.group.teacher.username }}</dd>
+                <dd class="col-sm-8">{{ student.teacher.username }}</dd>
                 
                 <dt class="col-sm-4">Номер телефона:</dt>
                 <dd class="col-sm-8">{{ student.phone_number|default:"Не указан" }}</dd>
@@ -45,7 +42,7 @@
                 </dd>
             </dl>
             
-            {% if user.userprofile.role == 'teacher' and student.group.teacher == user or user.userprofile.role == 'admin' %}
+            {% if user.userprofile.role == 'teacher' and student.teacher == user or user.userprofile.role == 'admin' %}
                 <a href="{% url 'student_edit' student.id %}" class="btn btn-primary">Редактировать</a>
             {% endif %}
         </div>

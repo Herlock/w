@@ -6,8 +6,8 @@ from django.contrib import messages
 from django.db.models import Q
 from django.db import transaction as db_transaction
 from django.http import HttpResponseForbidden
-from .models import Student, Class, Transaction, UserProfile
-from .forms import AwardCoinsForm, DeductCoinsForm, EditTransactionForm, StudentForm, StudentEditForm, ClassForm, ClassEditForm
+from .models import Student, Transaction, UserProfile
+from .forms import AwardCoinsForm, DeductCoinsForm, EditTransactionForm, StudentForm, StudentEditForm
 from .decorators import student_required, teacher_required, admin_required, teacher_or_admin_required, role_required
 
 def user_login(request):
@@ -68,32 +68,33 @@ def home(request):
     
     # Role-based home page
     if user_profile.role == 'student' and user_profile.student:
-        # Student view - show only their own information
+        # Student view - show their own information and classmates
         student = user_profile.student
         recent_transactions = Transaction.objects.filter(student=student).order_by('-date')[:10]
+        # Get classmates (students from the same teacher)
+        classmates = Student.objects.filter(teacher=student.teacher, is_hidden=False).exclude(id=student.id).order_by('name')
         
         context = {
             'student': student,
             'recent_transactions': recent_transactions,
+            'classmates': classmates,
         }
         return render(request, 'student_home.html', context)
     elif user_profile.role == 'teacher':
-        # Teacher view - show only their students and classes
+        # Teacher view - show only their students
         # Exclude hidden students from home page
-        students = Student.objects.filter(group__teacher=request.user, is_hidden=False).order_by('group', 'name')
+        students = Student.objects.filter(teacher=request.user, is_hidden=False).order_by('name')
         recent_transactions = Transaction.objects.filter(teacher=request.user).order_by('-date')[:10]
-        teacher_classes = Class.objects.filter(teacher=request.user).order_by('group')
         
         context = {
             'students': students,
             'recent_transactions': recent_transactions,
-            'teacher_classes': teacher_classes,
         }
         return render(request, 'teacher_home.html', context)
     elif user_profile.role == 'admin':
-        # Admin view - show all students with their classes and teachers
+        # Admin view - show all students with their teachers
         # Exclude hidden students from home page
-        students = Student.objects.filter(is_hidden=False).order_by('group', 'name')
+        students = Student.objects.filter(is_hidden=False).order_by('teacher__username', 'name')
         recent_transactions = Transaction.objects.all().order_by('-date')[:10]
         
         context = {
@@ -103,7 +104,7 @@ def home(request):
         return render(request, 'admin_home.html', context)
     else:
         # Default view for users without a specific role
-        students = Student.objects.all().order_by('group', 'name')
+        students = Student.objects.all().order_by('teacher__username', 'name')
         recent_transactions = Transaction.objects.all().order_by('-date')[:10]
         
         context = {
@@ -299,13 +300,13 @@ def student_list(request):
         students = Student.objects.filter(id=user_profile.student.id) if user_profile.student else Student.objects.none()
     elif user_profile.role == 'teacher':
         # Teachers can only see their own students (all students, including hidden - this is the management page)
-        students = Student.objects.filter(group__teacher=request.user).order_by('group', 'name')
+        students = Student.objects.filter(teacher=request.user).order_by('name')
     elif user_profile.role == 'admin':
         # Admins can see all students (including hidden - this is the management page)
-        students = Student.objects.all().order_by('group', 'name')
+        students = Student.objects.all().order_by('teacher__username', 'name')
     else:
         # Default: teachers can only see their own students
-        students = Student.objects.filter(group__teacher=request.user).order_by('group', 'name')
+        students = Student.objects.filter(teacher=request.user).order_by('name')
     
     # Get search query
     search_query = request.GET.get('search')
@@ -314,16 +315,14 @@ def student_list(request):
         if user_profile.role == 'admin':
             students = students.filter(
                 Q(name__icontains=search_query) |
-                Q(group__group__icontains=search_query) |
                 Q(phone_number__icontains=search_query) |
-                Q(group__teacher__username__icontains=search_query) |
-                Q(group__teacher__userprofile__full_name__icontains=search_query)
+                Q(teacher__username__icontains=search_query) |
+                Q(teacher__userprofile__full_name__icontains=search_query)
             )
         else:
             # Regular search for teachers
             students = students.filter(
-                Q(name__icontains=search_query) |
-                Q(group__group__icontains=search_query)
+                Q(name__icontains=search_query)
             )
     
     context = {
@@ -350,13 +349,13 @@ def student_detail(request, student_id):
             return HttpResponseForbidden("You don't have permission to view this student's details.")
     elif user_profile.role == 'teacher':
         # Teachers can only see their own students
-        student = get_object_or_404(Student, id=student_id, group__teacher=request.user)
+        student = get_object_or_404(Student, id=student_id, teacher=request.user)
     elif user_profile.role == 'admin':
         # Admins can see all students
         student = get_object_or_404(Student, id=student_id)
     else:
         # Default: teachers can only see their own students
-        student = get_object_or_404(Student, id=student_id, group__teacher=request.user)
+        student = get_object_or_404(Student, id=student_id, teacher=request.user)
     
     # Get recent transactions for this student
     recent_transactions = Transaction.objects.filter(student=student).order_by('-date')[:10]
@@ -404,18 +403,30 @@ def student_create(request):
 
 @login_required
 def student_edit(request, student_id):
-    student = get_object_or_404(Student, id=student_id, group__teacher=request.user)
+    # Get user profile to check permissions
+    try:
+        user_profile = request.user.userprofile
+    except UserProfile.DoesNotExist:
+        user_profile = UserProfile.objects.create(user=request.user, role='teacher')
+    
+    # Role-based access
+    if user_profile.role == 'admin':
+        student = get_object_or_404(Student, id=student_id)
+    elif user_profile.role == 'teacher':
+        student = get_object_or_404(Student, id=student_id, teacher=request.user)
+    else:
+        return HttpResponseForbidden("You don't have permission to edit students.")
     
     if request.method == 'POST':
         form = StudentEditForm(request.POST, instance=student, user=request.user)
         if form.is_valid():
             old_balance = student.balance
-            old_group = student.group
+            old_teacher = student.teacher
             old_phone = student.phone_number
             
             updated_student = form.save()
             new_balance = updated_student.balance
-            new_group = updated_student.group
+            new_teacher = updated_student.teacher
             new_phone = updated_student.phone_number
             
             # Update associated user account if phone number changed
@@ -450,9 +461,9 @@ def student_edit(request, student_id):
                     comment=f'Balance manually adjusted from {old_balance} to {new_balance}'
                 )
             
-            # If group was changed, add a comment about the transfer
-            if old_group != new_group:
-                messages.info(request, f'Student transferred from "{old_group.group}" to "{new_group.group}".')
+            # If teacher was changed, add a comment about the transfer
+            if old_teacher != new_teacher:
+                messages.info(request, f'Student transferred from "{old_teacher.username}" to "{new_teacher.username}".')
             
             messages.success(request, f'Student "{updated_student.name}" has been updated successfully.')
             return redirect('student_detail', student_id=updated_student.id)
@@ -464,110 +475,3 @@ def student_edit(request, student_id):
         'student': student,
     }
     return render(request, 'student_edit.html', context)
-
-# Class Management Views
-@login_required
-def class_list(request):
-    # Get user profile
-    try:
-        user_profile = request.user.userprofile
-    except UserProfile.DoesNotExist:
-        # Create a default profile if it doesn't exist
-        user_profile = UserProfile.objects.create(user=request.user, role='teacher')
-    
-    # Role-based access
-    if user_profile.role == 'student':
-        # Students don't have access to class list
-        return HttpResponseForbidden("Students don't have access to class management.")
-    elif user_profile.role == 'teacher':
-        # Teachers can only see their own classes
-        classes = Class.objects.filter(teacher=request.user).order_by('group')
-    elif user_profile.role == 'admin':
-        # Admins can see all classes
-        classes = Class.objects.all().order_by('group')
-    else:
-        # Default: teachers can only see their own classes
-        classes = Class.objects.filter(teacher=request.user).order_by('group')
-    
-    # Add student count for each class
-    classes_with_counts = []
-    for class_obj in classes:
-        student_count = Student.objects.filter(group=class_obj).count()
-        classes_with_counts.append({
-            'class': class_obj,
-            'student_count': student_count
-        })
-    
-    # Get search query
-    search_query = request.GET.get('search')
-    if search_query:
-        classes = classes.filter(
-            Q(group__icontains=search_query) |
-            Q(description__icontains=search_query)
-        )
-        classes_with_counts = []
-        for class_obj in classes:
-            student_count = Student.objects.filter(group=class_obj).count()
-            classes_with_counts.append({
-                'class': class_obj,
-                'student_count': student_count
-            })
-    
-    context = {
-        'classes_with_counts': classes_with_counts,
-        'search_query': search_query,
-    }
-    return render(request, 'class_list.html', context)
-
-@login_required
-def class_detail(request, class_id):
-    class_obj = get_object_or_404(Class, id=class_id, teacher=request.user)
-    
-    # Get students in this class
-    students = Student.objects.filter(group=class_obj).order_by('name')
-    
-    # Get recent transactions for this class
-    recent_transactions = Transaction.objects.filter(
-        student__group=class_obj
-    ).order_by('-date')[:10]
-    
-    context = {
-        'class_obj': class_obj,
-        'students': students,
-        'recent_transactions': recent_transactions,
-    }
-    return render(request, 'class_detail.html', context)
-
-@login_required
-def class_create(request):
-    if request.method == 'POST':
-        form = ClassForm(request.POST)
-        if form.is_valid():
-            class_obj = form.save(commit=False)
-            class_obj.teacher = request.user  # Automatically assign to current teacher
-            class_obj.save()
-            messages.success(request, f'Class "{class_obj.group}" has been created successfully.')
-            return redirect('class_list')
-    else:
-        form = ClassForm()
-    
-    return render(request, 'class_create.html', {'form': form})
-
-@login_required
-def class_edit(request, class_id):
-    class_obj = get_object_or_404(Class, id=class_id, teacher=request.user)
-    
-    if request.method == 'POST':
-        form = ClassEditForm(request.POST, instance=class_obj)
-        if form.is_valid():
-            updated_class = form.save()
-            messages.success(request, f'Class "{updated_class.group}" has been updated successfully.')
-            return redirect('class_detail', class_id=updated_class.id)
-    else:
-        form = ClassEditForm(instance=class_obj)
-    
-    context = {
-        'form': form,
-        'class_obj': class_obj,
-    }
-    return render(request, 'class_edit.html', context)

@@ -29,7 +29,6 @@
                 <thead>
                     <tr>
                         <th>Имя</th>
-                        <th>Группа</th>
                         <th>Баланс</th>
                         {% if user.userprofile.role == 'teacher' or user.userprofile.role == 'admin' %}
                             <th>Номер телефона</th>
@@ -43,7 +42,6 @@
                     {% for student in students %}
                     <tr>
                         <td>{{ student.name }}</td>
-                        <td>{{ student.group.group }}</td>
                         <td>
                             <span class="badge bg-warning text-dark">{{ student.balance }} IQ</span>
                             {% if student.balance < 0 %}
@@ -52,7 +50,7 @@
                         </td>
                         {% if user.userprofile.role == 'teacher' or user.userprofile.role == 'admin' %}
                             <td>{{ student.phone_number|default:"Не указан" }}</td>
-                            <td>{{ student.group.teacher.username }}</td>
+                            <td>{{ student.teacher.username }}</td>
                             <td>
                                 {% if student.is_active %}
                                     <span class="badge bg-success">Активен</span>
@@ -65,7 +63,7 @@
                             </td>
                             <td>
                                 <a href="{% url 'student_detail' student.id %}" class="btn btn-sm btn-primary">Просмотр</a>
-                                {% if user.userprofile.role == 'teacher' and student.group.teacher == user or user.userprofile.role == 'admin' %}
+                                {% if user.userprofile.role == 'teacher' and student.teacher == user or user.userprofile.role == 'admin' %}
                                     <a href="{% url 'student_edit' student.id %}" class="btn btn-sm btn-secondary">Редактировать</a>
                                 {% endif %}
                             </td>

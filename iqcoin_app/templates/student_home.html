@@ -21,42 +21,43 @@
                     <p><strong>Преподаватель:</strong> {{ student.group.teacher.username }}</p>
                 </div>
             </div>
+            
+            <h3>Ученики моего класса</h3>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Имя</th>
+                            <th>Баланс</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="table-info">
+                            <td><strong>{{ student.name }} (Вы)</strong></td>
+                            <td><span class="badge bg-primary">{{ student.balance }} Айкьюшек</span></td>
+                        </tr>
+                        {% for classmate in classmates %}
+                        <tr>
+                            <td>{{ classmate.name }}</td>
+                            <td><span class="badge bg-primary">{{ classmate.balance }} Айкьюшек</span></td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="2" class="text-center">Других учеников в вашем классе нет</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
         
         <div class="col-md-4">
-            <h3>Последние транзакции</h3>
-            {% if recent_transactions %}
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Тип</th>
-                                <th>Сумма</th>
-                                <th>Преподаватель</th>
-                                <th>Дата</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for transaction in recent_transactions %}
-                            <tr>
-                                <td>
-                                    {% if transaction.type == 'AWARD' %}
-                                        <span class="badge bg-success">Награда</span>
-                                    {% else %}
-                                        <span class="badge bg-danger">Вычет</span>
-                                    {% endif %}
-                                </td>
-                                <td>{{ transaction.amount }}</td>
-                                <td>{{ transaction.teacher.username }}</td>
-                                <td>{{ transaction.date|date:"d.m.Y" }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            {% else %}
-                <p class="text-muted">Транзакции не найдены</p>
-            {% endif %}
+            <div class="alert alert-info">
+                <h4>Информация</h4>
+                <p>Вы можете просматривать список учеников вашего класса и их баланс.</p>
+                <p>Для получения Айкьюшек обратитесь к своему учителю.</p>
+                <p>Используйте "История" для просмотра всех транзакций.</p>
+            </div>
         </div>
     </div>
 </div>

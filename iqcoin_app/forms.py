@@ -1,5 +1,6 @@
 from django import forms
-from .models import Class, Student, Transaction
+from .models import Student, Transaction
+from django.contrib.auth.models import User
 
 class AwardCoinsForm(forms.Form):
     students = forms.ModelMultipleChoiceField(queryset=Student.objects.none(), widget=forms.CheckboxSelectMultiple)
@@ -19,11 +20,11 @@ class AwardCoinsForm(forms.Form):
                 else:
                     # Teachers can only award coins to their own students
                     # Exclude hidden students from award form
-                    self.fields['students'].queryset = Student.objects.filter(group__teacher=user, is_hidden=False)
+                    self.fields['students'].queryset = Student.objects.filter(teacher=user, is_hidden=False)
             except:
                 # Default: only show students from classes taught by the current teacher
                 # Exclude hidden students from award form
-                self.fields['students'].queryset = Student.objects.filter(group__teacher=user, is_hidden=False)
+                self.fields['students'].queryset = Student.objects.filter(teacher=user, is_hidden=False)
 
 class DeductCoinsForm(forms.Form):
     student = forms.ModelChoiceField(queryset=Student.objects.none(), label="Student")
@@ -44,11 +45,11 @@ class DeductCoinsForm(forms.Form):
                 else:
                     # Teachers can only deduct coins from their own students
                     # Exclude hidden students from deduct form
-                    self.fields['student'].queryset = Student.objects.filter(group__teacher=user, is_hidden=False)
+                    self.fields['student'].queryset = Student.objects.filter(teacher=user, is_hidden=False)
             except:
                 # Default: only show students from classes taught by the current teacher
                 # Exclude hidden students from deduct form
-                self.fields['student'].queryset = Student.objects.filter(group__teacher=user, is_hidden=False)
+                self.fields['student'].queryset = Student.objects.filter(teacher=user, is_hidden=False)
 
 class EditTransactionForm(forms.ModelForm):
     class Meta:
@@ -61,10 +62,10 @@ class EditTransactionForm(forms.ModelForm):
 class StudentForm(forms.ModelForm):
     class Meta:
         model = Student
-        fields = ['name', 'group', 'phone_number']
+        fields = ['name', 'teacher', 'phone_number']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter student name'}),
-            'group': forms.Select(attrs={'class': 'form-control'}),
+            'teacher': forms.Select(attrs={'class': 'form-control'}),
             'phone_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter phone number (e.g., +79991234567)'}),
         }
     
@@ -72,16 +73,30 @@ class StudentForm(forms.ModelForm):
         user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
         if user:
-            # Only show classes that belong to the current teacher
-            self.fields['group'].queryset = Class.objects.filter(teacher=user)
+            # Check if user is admin
+            try:
+                user_profile = user.userprofile
+                if user_profile.role == 'admin':
+                    # Admins can assign students to any teacher
+                    self.fields['teacher'].queryset = User.objects.filter(userprofile__role__in=['teacher', 'admin'])
+                else:
+                    # Teachers can only create students for themselves
+                    self.fields['teacher'].queryset = User.objects.filter(id=user.id)
+                    self.fields['teacher'].initial = user
+                    self.fields['teacher'].widget = forms.HiddenInput()
+            except:
+                # Default: only show current user
+                self.fields['teacher'].queryset = User.objects.filter(id=user.id)
+                self.fields['teacher'].initial = user
+                self.fields['teacher'].widget = forms.HiddenInput()
 
 class StudentEditForm(forms.ModelForm):
     class Meta:
         model = Student
-        fields = ['name', 'group', 'balance', 'phone_number', 'is_active', 'is_hidden']
+        fields = ['name', 'teacher', 'balance', 'phone_number', 'is_active', 'is_hidden']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter student name'}),
-            'group': forms.Select(attrs={'class': 'form-control'}),
+            'teacher': forms.Select(attrs={'class': 'form-control'}),
             'balance': forms.NumberInput(attrs={'class': 'form-control', 'min': 0}),
             'phone_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter phone number (e.g., +79991234567)'}),
             'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
@@ -89,7 +104,7 @@ class StudentEditForm(forms.ModelForm):
         }
         labels = {
             'name': 'Student Name',
-            'group': 'Class/Group',
+            'teacher': 'Teacher',
             'balance': 'IQ-coin Balance',
             'phone_number': 'Phone Number',
             'is_active': 'Active Student',
@@ -100,31 +115,18 @@ class StudentEditForm(forms.ModelForm):
         user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
         if user:
-            # Only show classes that belong to the current teacher
-            self.fields['group'].queryset = Class.objects.filter(teacher=user)
+            # Check if user is admin
+            try:
+                user_profile = user.userprofile
+                if user_profile.role == 'admin':
+                    # Admins can assign students to any teacher
+                    self.fields['teacher'].queryset = User.objects.filter(userprofile__role__in=['teacher', 'admin'])
+                else:
+                    # Teachers can only assign to themselves
+                    self.fields['teacher'].queryset = User.objects.filter(id=user.id)
+                    self.fields['teacher'].widget = forms.HiddenInput()
+            except:
+                # Default: only show current user
+                self.fields['teacher'].queryset = User.objects.filter(id=user.id)
+                self.fields['teacher'].widget = forms.HiddenInput()
 
-class ClassForm(forms.ModelForm):
-    class Meta:
-        model = Class
-        fields = ['group', 'description']
-        widgets = {
-            'group': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter class/group name'}),
-            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Optional description'}),
-        }
-        labels = {
-            'group': 'Class/Group Name',
-            'description': 'Description',
-        }
-
-class ClassEditForm(forms.ModelForm):
-    class Meta:
-        model = Class
-        fields = ['group', 'description']
-        widgets = {
-            'group': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter class/group name'}),
-            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Optional description'}),
-        }
-        labels = {
-            'group': 'Class/Group Name',
-            'description': 'Description',
-        }

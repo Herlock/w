@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Student, Class, Transaction, UserProfile
+from .models import Student, Transaction, UserProfile
 
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
@@ -10,15 +10,9 @@ class UserProfileAdmin(admin.ModelAdmin):
 
 @admin.register(Student)
 class StudentAdmin(admin.ModelAdmin):
-    list_display = ('name', 'group', 'balance')
-    list_filter = ('group',)
+    list_display = ('name', 'teacher', 'balance', 'is_hidden')
+    list_filter = ('teacher', 'is_hidden')
     search_fields = ('name',)
-
-@admin.register(Class)
-class ClassAdmin(admin.ModelAdmin):
-    list_display = ('group', 'teacher')
-    list_filter = ('group', 'teacher')
-    search_fields = ('group',)
 
 @admin.register(Transaction)
 class TransactionAdmin(admin.ModelAdmin):

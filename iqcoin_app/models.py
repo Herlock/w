@@ -19,17 +19,9 @@ class UserProfile(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.get_role_display()}"
 
-class Class(models.Model):
-    group = models.CharField(max_length=50)
-    teacher = models.ForeignKey(User, on_delete=models.CASCADE)
-    description = models.TextField(blank=True, null=True)
-
-    def __str__(self):
-        return f"{self.group}"
-
 class Student(models.Model):
     name = models.CharField(max_length=100)
-    group = models.ForeignKey(Class, on_delete=models.CASCADE)
+    teacher = models.ForeignKey(User, on_delete=models.CASCADE, related_name='students')
     balance = models.IntegerField(default=0)
     # Phone number for student login
     phone_number = models.CharField(max_length=15, unique=True, blank=True, null=True)
@@ -39,7 +31,7 @@ class Student(models.Model):
     is_hidden = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"{self.name} ({self.group.group})"
+        return f"{self.name} (Teacher: {self.teacher.username})"
 
 class Transaction(models.Model):
     TRANSACTION_TYPES = (

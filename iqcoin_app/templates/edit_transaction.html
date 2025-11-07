@@ -18,7 +18,6 @@
                         {% endif %}
                     </p>
                     <p><strong>Студент:</strong> {{ transaction.student.name }}</p>
-                    <p><strong>Группа:</strong> {{ transaction.student.group.group }}</p>
                     <p><strong>Преподаватель:</strong> {{ transaction.teacher.username }}</p>
                     <p><strong>Дата:</strong> {{ transaction.date|date:"d.m.Y H:i" }}</p>
                     {% if transaction.comment %}

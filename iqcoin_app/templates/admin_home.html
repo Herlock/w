@@ -15,7 +15,6 @@
                                 <th>Тип</th>
                                 <th>Сумма</th>
                                 <th>Студент</th>
-                                <th>Группа</th>
                                 <th>Преподаватель</th>
                                 <th>Дата</th>
                             </tr>
@@ -32,7 +31,6 @@
                                 </td>
                                 <td>{{ transaction.amount }}</td>
                                 <td>{{ transaction.student.name }}</td>
-                                <td>{{ transaction.student.group.group }}</td>
                                 <td>{{ transaction.teacher.username }}</td>
                                 <td>{{ transaction.date|date:"d.m.Y H:i" }}</td>
                             </tr>
