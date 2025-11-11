@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.db.models import Q
@@ -57,6 +57,20 @@ def student_login(request):
     
     return render(request, 'student_login.html')
 
+def custom_logout(request):
+    """
+    Custom logout view that properly clears session and redirects to student login.
+    """
+    # Clear the student phone number from session
+    if 'student_phone_number' in request.session:
+        del request.session['student_phone_number']
+    
+    # Logout the user
+    logout(request)
+    
+    # Redirect to student login page
+    return redirect('student_login')
+
 @login_required
 def home(request):
     # Get user profile
@@ -66,52 +80,32 @@ def home(request):
         # Create a default profile if it doesn't exist
         user_profile = UserProfile.objects.create(user=request.user, role='teacher')
     
-    # Role-based home page
-    if user_profile.role == 'student' and user_profile.student:
-        # Student view - show their own information and classmates
-        student = user_profile.student
-        recent_transactions = Transaction.objects.filter(student=student).order_by('-date')[:10]
-        # Get classmates (students from the same teacher)
-        classmates = Student.objects.filter(teacher=student.teacher, is_hidden=False).exclude(id=student.id).order_by('name')
+    # Check if this is a student
+    if user_profile.role == 'student':
+        # Get the phone number from session (set during login)
+        phone_number = request.session.get('student_phone_number')
         
-        context = {
-            'student': student,
-            'recent_transactions': recent_transactions,
-            'classmates': classmates,
-        }
-        return render(request, 'student_home.html', context)
-    elif user_profile.role == 'teacher':
-        # Teacher view - show only their students
-        # Exclude hidden students from home page
-        students = Student.objects.filter(teacher=request.user, is_hidden=False).order_by('name')
-        recent_transactions = Transaction.objects.filter(teacher=request.user).order_by('-date')[:10]
-        
-        context = {
-            'students': students,
-            'recent_transactions': recent_transactions,
-        }
-        return render(request, 'teacher_home.html', context)
-    elif user_profile.role == 'admin':
-        # Admin view - show all students with their teachers
-        # Exclude hidden students from home page
-        students = Student.objects.filter(is_hidden=False).order_by('teacher__username', 'name')
-        recent_transactions = Transaction.objects.all().order_by('-date')[:10]
-        
-        context = {
-            'students': students,
-            'recent_transactions': recent_transactions,
-        }
-        return render(request, 'admin_home.html', context)
-    else:
-        # Default view for users without a specific role
-        students = Student.objects.all().order_by('teacher__username', 'name')
-        recent_transactions = Transaction.objects.all().order_by('-date')[:10]
-        
-        context = {
-            'students': students,
-            'recent_transactions': recent_transactions,
-        }
-        return render(request, 'home.html', context)
+        if phone_number:
+            # Get all students with this phone number
+            students_with_phone = Student.objects.filter(
+                phone_number=phone_number,
+                is_active=True
+            ).order_by('name')
+            
+            # Get all transactions for these students
+            recent_transactions = Transaction.objects.filter(
+                student__in=students_with_phone
+            ).order_by('-date')[:10]
+            
+            context = {
+                'students': students_with_phone,
+                'recent_transactions': recent_transactions,
+                'phone_number': phone_number,
+            }
+            return render(request, 'student_home.html', context)
+    
+    # For teachers and admins, redirect to student list
+    return redirect('student_list')
 
 @login_required
 def award_coins(request):
@@ -206,8 +200,18 @@ def transaction_history(request):
     
     # Role-based access
     if user_profile.role == 'student':
-        # Students can only see their own transactions
-        transactions = Transaction.objects.filter(student=user_profile.student).order_by('-date') if user_profile.student else Transaction.objects.none()
+        # Students can see transactions for all students with their phone number
+        phone_number = request.session.get('student_phone_number')
+        if phone_number:
+            # Get all students with this phone number
+            students_with_phone = Student.objects.filter(
+                phone_number=phone_number,
+                is_active=True
+            )
+            transactions = Transaction.objects.filter(student__in=students_with_phone).order_by('-date')
+        else:
+            # Fallback to just their own transactions
+            transactions = Transaction.objects.filter(student=user_profile.student).order_by('-date') if user_profile.student else Transaction.objects.none()
     elif user_profile.role == 'teacher':
         # Teachers can only see transactions they made
         transactions = Transaction.objects.filter(teacher=request.user).order_by('-date')

@@ -68,6 +68,11 @@ class StudentForm(forms.ModelForm):
             'teacher': forms.Select(attrs={'class': 'form-control'}),
             'phone_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter phone number (e.g., +79991234567)'}),
         }
+        labels = {
+            'name': 'Имя ученика',
+            'teacher': 'Преподаватель',
+            'phone_number': 'Номер телефона',
+        }
     
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
@@ -103,12 +108,12 @@ class StudentEditForm(forms.ModelForm):
             'is_hidden': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
         labels = {
-            'name': 'Student Name',
-            'teacher': 'Teacher',
-            'balance': 'IQ-coin Balance',
-            'phone_number': 'Phone Number',
-            'is_active': 'Active Student',
-            'is_hidden': 'Hide from General Lists',
+            'name': 'Имя ученика',
+            'teacher': 'Преподаватель',
+            'balance': 'Баланс Айкьюшек',
+            'phone_number': 'Номер телефона',
+            'is_active': 'Активный ученик',
+            'is_hidden': 'Скрыть из общих списков',
         }
     
     def __init__(self, *args, **kwargs):

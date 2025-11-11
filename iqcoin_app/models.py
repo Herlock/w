@@ -23,8 +23,8 @@ class Student(models.Model):
     name = models.CharField(max_length=100)
     teacher = models.ForeignKey(User, on_delete=models.CASCADE, related_name='students')
     balance = models.IntegerField(default=0)
-    # Phone number for student login
-    phone_number = models.CharField(max_length=15, unique=True, blank=True, null=True)
+    # Phone number for student login (can be shared by multiple students, e.g., siblings)
+    phone_number = models.CharField(max_length=15, blank=True, null=True)
     # Flag to indicate if student account is active
     is_active = models.BooleanField(default=True)
     # Flag to hide student from general lists (home page, award/deduct forms)

@@ -47,18 +47,18 @@
                     </div>
                     
                     <div class="mb-3">
-                        <label for="{{ form.group.id_for_label }}" class="form-label">
-                            {{ form.group.label }}
+                        <label for="{{ form.teacher.id_for_label }}" class="form-label">
+                            {{ form.teacher.label }}
                         </label>
-                        {{ form.group }}
-                        {% if form.group.errors %}
+                        {{ form.teacher }}
+                        {% if form.teacher.errors %}
                             <div class="text-danger">
-                                {{ form.group.errors }}
+                                {{ form.teacher.errors }}
                             </div>
                         {% endif %}
                         <div class="form-text">
-                            Current class: <strong>{{ student.group.group }}</strong>. 
-                            Change this to transfer the student to a different class.
+                            Текущий преподаватель: <strong>{{ student.teacher.userprofile.full_name|default:student.teacher.username }}</strong>. 
+                            Измените это, чтобы перевести ученика к другому преподавателю.
                         </div>
                     </div>
                     
@@ -114,17 +114,17 @@
                     <div class="mb-3">
                         <div class="card bg-light">
                             <div class="card-body">
-                                <h6 class="card-title">Student Information</h6>
+                                <h6 class="card-title">Информация об ученике</h6>
                                 <p class="card-text mb-1">
-                                    <strong>Class:</strong> {{ student.group.group }}
+                                    <strong>Преподаватель:</strong> {{ student.teacher.userprofile.full_name|default:student.teacher.username }}
                                 </p>
                                 <p class="card-text mb-1">
-                                    <strong>Teacher:</strong> {{ student.group.teacher.username }}
+                                    <strong>Номер телефона:</strong> {{ student.phone_number|default:"Не указан" }}
                                 </p>
                                 <p class="card-text mb-0">
-                                    <strong>Current Balance:</strong> 
+                                    <strong>Текущий баланс:</strong> 
                                     <span class="badge bg-{% if student.balance > 0 %}primary{% elif student.balance == 0 %}secondary{% else %}danger{% endif %}">
-                                        {{ student.balance }} IQ-coins
+                                        {{ student.balance }} Айкьюшек
                                     </span>
                                 </p>
                             </div>

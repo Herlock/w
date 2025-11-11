@@ -11,8 +11,18 @@
         body {
             padding-top: 60px;
         }
+        .navbar {
+            background-color: #68C8F2;
+            color: #fff;
+        }
         .navbar-brand {
             font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+        .navbar-brand img {
+            height: 40px;
+            margin-right: 10px;
         }
         .coin-balance {
             background-color: #ffc107;
@@ -30,9 +40,12 @@
 </head>
 <body>
     <!-- Navigation Bar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+    <nav class="navbar navbar-expand-lg  fixed-top">
         <div class="container">
-            <a class="navbar-brand" href="{% url 'home' %}">IQ Coin System</a>
+            {% load static %}
+            <a class="navbar-brand" href="{% url 'home' %}">
+                <img src="{% static 'images/iqLogo.png' %}" alt="IQ Coin Logo">
+            </a>
             
             <!-- Mobile menu toggle -->
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -76,7 +89,7 @@
                                 {% if user.userprofile.role == 'student' and user.userprofile.student %}
                                     <span class="coin-balance">Баланс: {{ user.userprofile.student.balance }} IQ</span>
                                 {% endif %}
-                                Привет, {% if user.userprofile.full_name %} ({{ user.userprofile.full_name }}){% endif %}!
+                                Привет, {% if user.userprofile.full_name %} {{ user.userprofile.full_name }}{% endif %}!
                             </span>
                         </li>
                         <li class="nav-item">
@@ -110,7 +123,7 @@
     <!-- Footer -->
     <footer class="footer bg-light">
         <div class="container text-center">
-            <span class="text-muted">&copy; 2023 IQ Coin System</span>
+            <span class="text-muted">&copy; 2025 IQ Coin System</span>
         </div>
     </footer>
 

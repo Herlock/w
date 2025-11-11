@@ -17,8 +17,15 @@ class StudentPhoneBackend(BaseBackend):
             return None
             
         try:
-            # Find student by phone number
-            student = Student.objects.get(phone_number=phone_number, is_active=True)
+            # Find students by phone number (may be multiple students sharing the same number)
+            students = Student.objects.filter(phone_number=phone_number, is_active=True)
+            
+            if not students.exists():
+                return None
+            
+            # Use the first student to create/get the user account
+            # All students with this phone number will be shown on the home page
+            student = students.first()
             
             # Create or get a user object for this student
             # We'll use a prefix to distinguish student users from regular users
@@ -41,8 +48,14 @@ class StudentPhoneBackend(BaseBackend):
                 profile.role = 'student'
                 profile.save()
             
+            # Store the phone number in the session so we can show all students with this phone
+            if request:
+                request.session['student_phone_number'] = phone_number
+            
             return user
-        except Student.DoesNotExist:
+        except Exception as e:
+            # Log the error for debugging
+            print(f"Authentication error: {e}")
             return None
     
     def get_user(self, user_id):

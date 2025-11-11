@@ -6,44 +6,37 @@
 <div class="container">
     <div class="row">
         <div class="col-md-8">
-            <h2>Добро пожаловать, {{ student.name }}!</h2>
+            <h2>Добро пожаловать!</h2>
             
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h5 class="card-title">Ваш профиль</h5>
-                    <p><strong>Баланс:</strong> 
-                        <span class="badge bg-warning text-dark">{{ student.balance }} IQ</span>
-                        {% if student.balance < 0 %}
-                            <span class="badge bg-danger">Отрицательный баланс</span>
-                        {% endif %}
-                    </p>
-                    <p><strong>Группа:</strong> {{ student.group.group }}</p>
-                    <p><strong>Преподаватель:</strong> {{ student.group.teacher.username }}</p>
-                </div>
+            <div class="alert alert-info">
+                <strong>Вход по номеру телефона:</strong> {{ phone_number }}
             </div>
             
-            <h3>Ученики моего класса</h3>
+            <h3>Все ученики под этим номером</h3>
             <div class="table-responsive">
                 <table class="table table-striped">
                     <thead>
                         <tr>
                             <th>Имя</th>
+                            <th>Преподаватель</th>
                             <th>Баланс</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr class="table-info">
-                            <td><strong>{{ student.name }} (Вы)</strong></td>
-                            <td><span class="badge bg-primary">{{ student.balance }} Айкьюшек</span></td>
-                        </tr>
-                        {% for classmate in classmates %}
+                        {% for student in students %}
                         <tr>
-                            <td>{{ classmate.name }}</td>
-                            <td><span class="badge bg-primary">{{ classmate.balance }} Айкьюшек</span></td>
+                            <td><strong>{{ student.name }}</strong></td>
+                            <td>{{ student.teacher.userprofile.full_name|default:student.teacher.username }}</td>
+                            <td>
+                                <span class="badge bg-warning text-dark">{{ student.balance }} IQ</span>
+                                {% if student.balance < 0 %}
+                                    <span class="badge bg-danger">Отрицательный</span>
+                                {% endif %}
+                            </td>
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="2" class="text-center">Других учеников в вашем классе нет</td>
+                            <td colspan="3" class="text-center">Нет учеников с этим номером телефона</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -52,10 +45,44 @@
         </div>
         
         <div class="col-md-4">
-            <div class="alert alert-info">
+            <h3>Последние транзакции</h3>
+            {% if recent_transactions %}
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped">
+                        <thead>
+                            <tr>
+                                <th>Тип</th>
+                                <th>Ученик</th>
+                                <th>Сумма</th>
+                                <th>Дата</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for transaction in recent_transactions %}
+                            <tr>
+                                <td>
+                                    {% if transaction.type == 'AWARD' %}
+                                        <span class="badge bg-success">+</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ transaction.student.name }}</td>
+                                <td>{{ transaction.amount }}</td>
+                                <td>{{ transaction.date|date:"d.m H:i" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-muted">Транзакции не найдены</p>
+            {% endif %}
+            
+            <div class="alert alert-info mt-3">
                 <h4>Информация</h4>
-                <p>Вы можете просматривать список учеников вашего класса и их баланс.</p>
-                <p>Для получения Айкьюшек обратитесь к своему учителю.</p>
+                <p>Вы видите всех учеников, которые используют этот номер телефона для входа.</p>
+                <p>Это удобно для родителей с несколькими детьми.</p>
                 <p>Используйте "История" для просмотра всех транзакций.</p>
             </div>
         </div>
