@@ -50,7 +50,13 @@
                         </td>
                         {% if user.userprofile.role == 'teacher' or user.userprofile.role == 'admin' %}
                             <td>{{ student.phone_number|default:"Не указан" }}</td>
-                            <td>{{ student.teacher.username }}</td>
+                            <td>
+                                {% if student.teacher.userprofile.full_name %}
+                                    {{ student.teacher.userprofile.full_name }}
+                                {% else %}
+                                    {{ student.teacher.username }}
+                                {% endif %}
+                            </td>
                             <td>
                                 {% if student.is_active %}
                                     <span class="badge bg-success">Активен</span>

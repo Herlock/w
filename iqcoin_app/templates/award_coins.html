@@ -28,10 +28,10 @@
                         <label class="form-label">Select Students</label>
                         <div class="row">
                             {% for choice in form.students %}
-                                <div class="col-md-6 col-lg-4">
-                                    <div class="form-check">
+                                <div class="col-md-6 col-lg-4 mb-2 student-item" style="cursor: pointer;" onclick="toggleCheckbox(this)">
+                                    <div class="form-check border rounded p-3 h-100">
                                         {{ choice.tag }}
-                                        <label class="form-check-label" for="{{ choice.id_for_label }}">
+                                        <label class="form-check-label w-100" for="{{ choice.id_for_label }}" style="cursor: pointer;">
                                             {{ choice.choice_label }}
                                         </label>
                                     </div>
@@ -71,5 +71,35 @@ document.addEventListener('DOMContentLoaded', function() {
         checkbox.classList.add('form-check-input');
     });
 });
+
+// Function to toggle checkbox when clicking on the entire cell
+function toggleCheckbox(element) {
+    // Find the checkbox within this element
+    const checkbox = element.querySelector('input[type="checkbox"]');
+    if (checkbox && event.target !== checkbox) {
+        checkbox.checked = !checkbox.checked;
+        // Trigger change event
+        checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+}
 </script>
+
+<style>
+.border {
+    border: 1px solid #dee2e6 !important;
+}
+
+.border:hover {
+    border-color: #0d6efd !important;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.form-check-input:checked ~ .form-check-label {
+    font-weight: bold;
+}
+
+.student-item {
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+</style>
 {% endblock %}

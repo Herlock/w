@@ -31,7 +31,13 @@
                                 </td>
                                 <td>{{ transaction.amount }}</td>
                                 <td>{{ transaction.student.name }}</td>
-                                <td>{{ transaction.teacher.username }}</td>
+                                <td>
+                                    {% if transaction.teacher.userprofile.full_name %}
+                                        {{ transaction.teacher.userprofile.full_name }}
+                                    {% else %}
+                                        {{ transaction.teacher.username }}
+                                    {% endif %}
+                                </td>
                                 <td>{{ transaction.date|date:"d.m.Y H:i" }}</td>
                             </tr>
                             {% endfor %}

@@ -67,7 +67,12 @@
                             </div>
                             <small class="text-muted">
                                 {{ transaction.date|date:"d.m.Y H:i" }}<br>
-                                Преподаватель: {{ transaction.teacher.username }}
+                                Преподаватель: 
+                                {% if transaction.teacher.userprofile.full_name %}
+                                    {{ transaction.teacher.userprofile.full_name }}
+                                {% else %}
+                                    {{ transaction.teacher.username }}
+                                {% endif %}
                             </small>
                             {% if transaction.comment %}
                                 <div class="mt-1">

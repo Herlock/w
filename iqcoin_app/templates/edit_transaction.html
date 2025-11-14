@@ -18,7 +18,13 @@
                         {% endif %}
                     </p>
                     <p><strong>Студент:</strong> {{ transaction.student.name }}</p>
-                    <p><strong>Преподаватель:</strong> {{ transaction.teacher.username }}</p>
+                    <p><strong>Преподаватель:</strong> 
+                        {% if transaction.teacher.userprofile.full_name %}
+                            {{ transaction.teacher.userprofile.full_name }}
+                        {% else %}
+                            {{ transaction.teacher.username }}
+                        {% endif %}
+                    </p>
                     <p><strong>Дата:</strong> {{ transaction.date|date:"d.m.Y H:i" }}</p>
                     {% if transaction.comment %}
                         <p><strong>Комментарий:</strong> {{ transaction.comment }}</p>
