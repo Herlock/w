@@ -80,8 +80,8 @@ def home(request):
         # Create a default profile if it doesn't exist
         user_profile = UserProfile.objects.create(user=request.user, role='teacher')
     
-    # Check if this is a student
-    if user_profile.role == 'student':
+    # Check if this is a student or parent
+    if user_profile.role in ['student', 'parent']:
         # Get the phone number from session (set during login)
         phone_number = request.session.get('student_phone_number')
         
@@ -101,6 +101,7 @@ def home(request):
                 'students': students_with_phone,
                 'recent_transactions': recent_transactions,
                 'phone_number': phone_number,
+                'is_parent': user_profile.role == 'parent',
             }
             return render(request, 'student_home.html', context)
     
@@ -118,6 +119,8 @@ def award_coins(request):
     
     # Only teachers and admins can award coins
     if user_profile.role not in ['teacher', 'admin']:
+        if user_profile.role == 'parent':
+            return HttpResponseForbidden("Parents cannot award coins. Please contact a teacher or administrator.")
         return HttpResponseForbidden("Only teachers and admins can award coins.")
     
     if request.method == 'POST':
@@ -157,6 +160,8 @@ def deduct_coins(request):
     
     # Only teachers and admins can deduct coins
     if user_profile.role not in ['teacher', 'admin']:
+        if user_profile.role == 'parent':
+            return HttpResponseForbidden("Parents cannot deduct coins. Please contact a teacher or administrator.")
         return HttpResponseForbidden("Only teachers and admins can deduct coins.")
     
     if request.method == 'POST':
