@@ -12,9 +12,9 @@
                 <div class="card-body">
                     <p><strong>Тип:</strong> 
                         {% if transaction.type == 'AWARD' %}
-                            <span class="badge bg-success">Награда</span>
+                            <span class="transaction-badge bg-success">Награда</span>
                         {% else %}
-                            <span class="badge bg-danger">Вычет</span>
+                            <span class="transaction-badge bg-danger">Вычет</span>
                         {% endif %}
                     </p>
                     <p><strong>Студент:</strong> {{ transaction.student.name }}</p>

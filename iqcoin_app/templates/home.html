@@ -5,7 +5,7 @@
 {% block content %}
 <div class="row">
     <div class="col-md-8">
-        <h2>Student Balances</h2>
+        <h2>Балансы учеников</h2>
         <div class="table-responsive">
             <table class="table table-striped">
                 <thead>
@@ -31,7 +31,7 @@
                             {% endif %}
                         </td>
                         <td>
-                            <span class="badge bg-primary">{{ student.balance }} Айкьюшек</span>
+                            <span class="badge iq-coin-badge">{{ student.balance }} Айкьюшек</span>
                         </td>
                     </tr>
                     {% empty %}
@@ -95,6 +95,28 @@
     transition: all 0.2s ease;
 }
 
+.iq-coin-badge {
+    background-color: #ff541f;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    display: inline-block;
+    min-width: 80px;
+    text-align: center;
+}
+
+.transaction-badge {
+    display: inline-block;
+    min-width: 80px;
+    text-align: center;
+}
+
+.status-badge {
+    display: inline-block;
+    min-width: 100px;
+    text-align: center;
+}
+
 .clickable-row a {
     color: inherit;
     font-weight: 500;
@@ -103,6 +125,14 @@
 .clickable-row a:hover {
     color: #0066cc;
     text-decoration: underline !important;
+}
+
+.transaction-award {
+    color: #28a745;
+}
+
+.transaction-deduct {
+    color: #dc3545;
 }
 </style>
 {% endblock %}

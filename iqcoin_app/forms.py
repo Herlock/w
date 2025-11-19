@@ -24,6 +24,8 @@ class StudentWithTeacherWidget(forms.CheckboxSelectMultiple):
                             teacher_name = student.teacher.username
                         # Add the teacher name as a data attribute (using underscore instead of hyphen)
                         option['attrs']['data_teacher_name'] = teacher_name
+                        # Add the teacher ID as a data attribute
+                        option['attrs']['data_teacher_id'] = student.teacher.id
             except (Student.DoesNotExist, AttributeError):
                 pass
         return option
@@ -84,7 +86,7 @@ class StudentWithTeacherWidget(forms.CheckboxSelectMultiple):
         return mark_safe(html + js_code)
 
 class AwardCoinsForm(forms.Form):
-    students = forms.ModelMultipleChoiceField(queryset=Student.objects.none(), widget=forms.CheckboxSelectMultiple)
+    students = forms.ModelMultipleChoiceField(queryset=Student.objects.none(), widget=StudentWithTeacherWidget)
     amount = forms.IntegerField(min_value=1, label="IQ-coins (1-3)")
     
     def __init__(self, *args, **kwargs):
@@ -97,15 +99,18 @@ class AwardCoinsForm(forms.Form):
                 if user_profile.role == 'admin':
                     # Admins can award coins to all students
                     # Exclude hidden students from award form
-                    self.fields['students'].queryset = Student.objects.filter(is_hidden=False)
+                    # Order by teacher username, then by student name
+                    self.fields['students'].queryset = Student.objects.filter(is_hidden=False).select_related('teacher__userprofile').order_by('teacher__username', 'name')
                 else:
                     # Teachers can only award coins to their own students
                     # Exclude hidden students from award form
-                    self.fields['students'].queryset = Student.objects.filter(teacher=user, is_hidden=False)
+                    # Order by student name
+                    self.fields['students'].queryset = Student.objects.filter(teacher=user, is_hidden=False).order_by('name')
             except:
                 # Default: only show students from classes taught by the current teacher
                 # Exclude hidden students from award form
-                self.fields['students'].queryset = Student.objects.filter(teacher=user, is_hidden=False)
+                # Order by student name
+                self.fields['students'].queryset = Student.objects.filter(teacher=user, is_hidden=False).order_by('name')
 
 class DeductCoinsForm(forms.Form):
     student = forms.ModelChoiceField(queryset=Student.objects.none(), label="Student")
