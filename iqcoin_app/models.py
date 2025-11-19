@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 # Define user roles
 USER_ROLES = (
     ('student', 'Student'),
+    ('parent', 'Parent'),
     ('teacher', 'Teacher'),
     ('admin', 'Admin'),
 )
