@@ -25,13 +25,13 @@
                     </div>
                     
                     <div class="mb-3">
-                        <label class="form-label">Select Students</label>
-                        <div class="row">
+                        <label class="form-label">Выберите учеников</label>
+                        <div class="row" id="students-container">
                             {% for choice in form.students %}
-                                <div class="col-md-6 col-lg-4">
-                                    <div class="form-check">
+                                <div class="col-md-6 col-lg-4 mb-2 student-item" style="cursor: pointer;" onclick="toggleCheckbox(this)">
+                                    <div class="form-check border rounded p-3 h-100 student-card">
                                         {{ choice.tag }}
-                                        <label class="form-check-label" for="{{ choice.id_for_label }}">
+                                        <label class="form-check-label w-100" for="{{ choice.id_for_label }}" style="cursor: pointer;">
                                             {{ choice.choice_label }}
                                         </label>
                                     </div>
@@ -70,6 +70,88 @@ document.addEventListener('DOMContentLoaded', function() {
     checkboxElements.forEach(function(checkbox) {
         checkbox.classList.add('form-check-input');
     });
+    
+    // Apply teacher-based pastel colors to student cards
+    applyTeacherColors();
 });
+
+// Function to apply pastel colors based on teacher IDs
+function applyTeacherColors() {
+    // Define pastel colors for teachers
+    const pastelColors = [
+        '#FFE4E1', // Misty Rose
+        '#F0FFF0', // Honeydew
+        '#F5FFFA', // Mint Cream
+        '#F0F8FF', // Alice Blue
+        '#F8F8FF', // Ghost White
+        '#FFF5EE', // Seashell
+        '#FFF0F5', // Lavender Blush
+        '#F5F5DC', // Beige
+        '#FFF8DC', // Cornsilk
+        '#FDF5E6'  // Old Lace
+    ];
+    
+    // Keep track of teacher ID to color mapping
+    const teacherColorMap = {};
+    let colorIndex = 0;
+    
+    const studentCards = document.querySelectorAll('.student-card');
+    studentCards.forEach(function(card) {
+        // Find the checkbox within the card to get teacher ID
+        const checkbox = card.querySelector('input[type="checkbox"]');
+        if (checkbox) {
+            const teacherId = checkbox.getAttribute('data_teacher_id');
+            if (teacherId) {
+                // If we haven't assigned a color to this teacher yet, assign one
+                if (!(teacherId in teacherColorMap)) {
+                    teacherColorMap[teacherId] = pastelColors[colorIndex % pastelColors.length];
+                    colorIndex++;
+                }
+                // Apply the teacher's color to this card
+                card.style.backgroundColor = teacherColorMap[teacherId];
+            }
+        }
+    });
+}
+
+// Function to toggle checkbox when clicking on the entire cell
+function toggleCheckbox(element) {
+    // Find the checkbox within this element
+    const checkbox = element.querySelector('input[type="checkbox"]');
+    if (checkbox && event.target !== checkbox) {
+        checkbox.checked = !checkbox.checked;
+        // Trigger change event
+        checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+}
 </script>
+
+<style>
+.border {
+    border: 1px solid #dee2e6 !important;
+}
+
+.border:hover {
+    border-color: #0d6efd !important;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.form-check-input:checked ~ .form-check-label {
+    font-weight: bold;
+}
+
+.student-item {
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.student-card {
+    transition: all 0.3s ease;
+    border-radius: 8px;
+}
+
+.student-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+</style>
 {% endblock %}

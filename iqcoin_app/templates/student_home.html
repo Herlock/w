@@ -28,9 +28,9 @@
                             <td><strong>{{ student.name }}</strong></td>
                             <td>{{ student.teacher.userprofile.full_name|default:student.teacher.username }}</td>
                             <td>
-                                <span class="badge bg-warning text-dark">{{ student.balance }} IQ</span>
+                                <span class="iq-coin-badge">{{ student.balance }} IQ</span>
                                 {% if student.balance < 0 %}
-                                    <span class="badge bg-danger">Отрицательный</span>
+                                    <span class="status-badge bg-danger">Отрицательный</span>
                                 {% endif %}
                             </td>
                         </tr>
@@ -62,9 +62,9 @@
                             <tr>
                                 <td>
                                     {% if transaction.type == 'AWARD' %}
-                                        <span class="badge bg-success">+</span>
+                                        <span class="transaction-badge bg-success">+</span>
                                     {% else %}
-                                        <span class="badge bg-danger">-</span>
+                                        <span class="transaction-badge bg-danger">-</span>
                                     {% endif %}
                                 </td>
                                 <td>{{ transaction.student.name }}</td>

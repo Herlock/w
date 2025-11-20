@@ -105,8 +105,44 @@ def home(request):
             }
             return render(request, 'student_home.html', context)
     
-    # For teachers and admins, redirect to student list
-    return redirect('student_list')
+    # For teachers and admins, show the dashboard with only non-hidden students
+    if user_profile.role == 'teacher':
+        # Teachers see only their own non-hidden students
+        students = Student.objects.filter(
+            teacher=request.user,
+            is_hidden=False,
+            is_active=True
+        ).order_by('name')
+        
+        # Get recent transactions for this teacher
+        recent_transactions = Transaction.objects.filter(
+            teacher=request.user
+        ).order_by('-date')[:10]
+        
+        context = {
+            'students': students,
+            'recent_transactions': recent_transactions,
+        }
+        return render(request, 'home.html', context)
+    
+    elif user_profile.role == 'admin':
+        # Admins see all non-hidden students
+        students = Student.objects.filter(
+            is_hidden=False,
+            is_active=True
+        ).order_by('teacher__username', 'name')
+        
+        # Get all recent transactions
+        recent_transactions = Transaction.objects.all().order_by('-date')[:10]
+        
+        context = {
+            'students': students,
+            'recent_transactions': recent_transactions,
+        }
+        return render(request, 'home.html', context)
+    
+    # Default fallback
+    return render(request, 'home.html')
 
 @login_required
 def award_coins(request):
@@ -308,19 +344,19 @@ def student_list(request):
         # Students can only see themselves
         students = Student.objects.filter(id=user_profile.student.id) if user_profile.student else Student.objects.none()
     elif user_profile.role == 'teacher':
-        # Teachers can only see their own students (all students, including hidden - this is the management page)
+        # Teachers can see all their students (including hidden and inactive - this is the management page)
         students = Student.objects.filter(teacher=request.user).order_by('name')
     elif user_profile.role == 'admin':
-        # Admins can see all students (including hidden - this is the management page)
+        # Admins can see all students (including hidden and inactive - this is the management page)
         students = Student.objects.all().order_by('teacher__username', 'name')
     else:
-        # Default: teachers can only see their own students
+        # Default: teachers can see all their students
         students = Student.objects.filter(teacher=request.user).order_by('name')
     
     # Get search query
     search_query = request.GET.get('search')
     if search_query:
-        # Enhanced search for administrators - include phone number and teacher name
+        # Enhanced search for administrator - include phone number and teacher name
         if user_profile.role == 'admin':
             students = students.filter(
                 Q(name__icontains=search_query) |

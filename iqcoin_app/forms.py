@@ -1,9 +1,92 @@
 from django import forms
 from .models import Student, Transaction
 from django.contrib.auth.models import User
+from django.utils.safestring import mark_safe
+
+class StudentWithTeacherWidget(forms.CheckboxSelectMultiple):
+    def create_option(self, name, value, label, selected, index, subindex=None, attrs=None):
+        option = super().create_option(name, value, label, selected, index, subindex, attrs)
+        if value:
+            try:
+                # Convert value to integer if it's a ModelChoiceIteratorValue
+                if hasattr(value, 'value'):
+                    student_id = value.value
+                else:
+                    student_id = value
+                    
+                if student_id and str(student_id).isdigit():
+                    student = Student.objects.select_related('teacher__userprofile').get(pk=student_id)
+                    # Try to get the teacher's full name, fallback to username
+                    if student.teacher:
+                        if hasattr(student.teacher, 'userprofile') and student.teacher.userprofile.full_name:
+                            teacher_name = student.teacher.userprofile.full_name
+                        else:
+                            teacher_name = student.teacher.username
+                        # Add the teacher name as a data attribute (using underscore instead of hyphen)
+                        option['attrs']['data_teacher_name'] = teacher_name
+                        # Add the teacher ID as a data attribute
+                        option['attrs']['data_teacher_id'] = student.teacher.id
+            except (Student.DoesNotExist, AttributeError):
+                pass
+        return option
+    
+    def render(self, name, value, attrs=None, renderer=None):
+        html = super().render(name, value, attrs, renderer)
+        # Add JavaScript to format the display and make entire cell clickable
+        js_code = '''
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Format student items to show teacher name in smaller font
+            const checkboxes = document.querySelectorAll('input[type="checkbox"][name="%s"]');
+            checkboxes.forEach(function(checkbox) {
+                // Get the parent element (the label container)
+                const parent = checkbox.closest('.form-check');
+                // Get the student-item container (the block with padding)
+                const studentItem = checkbox.closest('.student-item');
+                if (parent && studentItem) {
+                    // Get the label element
+                    const label = parent.querySelector('label');
+                    if (label) {
+                        // Get the student name (current text)
+                        const studentName = label.textContent.trim();
+                        
+                        // Get the teacher name from data attribute (using underscore instead of hyphen)
+                        const teacherName = checkbox.getAttribute('data_teacher_name');
+                        
+                        if (teacherName) {
+                            // Update the label to show student name and teacher name separately
+                            label.innerHTML = studentName + ' <small class="text-muted">(' + teacherName + ')</small>';
+                        }
+                        
+                        // Make the entire student-item container clickable
+                        studentItem.style.cursor = 'pointer';
+                        studentItem.addEventListener('click', function(e) {
+                            // Don't trigger if clicking on the checkbox itself or the label
+                            if (e.target !== checkbox && e.target !== label) {
+                                checkbox.checked = !checkbox.checked;
+                                // Trigger change event
+                                checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+                            }
+                        });
+                        
+                        // Also make the label clickable to toggle the checkbox
+                        label.style.cursor = 'pointer';
+                        label.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            checkbox.checked = !checkbox.checked;
+                            // Trigger change event
+                            checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+                        });
+                    }
+                }
+            });
+        });
+        </script>
+        ''' % name
+        return mark_safe(html + js_code)
 
 class AwardCoinsForm(forms.Form):
-    students = forms.ModelMultipleChoiceField(queryset=Student.objects.none(), widget=forms.CheckboxSelectMultiple)
+    students = forms.ModelMultipleChoiceField(queryset=Student.objects.none(), widget=StudentWithTeacherWidget)
     amount = forms.IntegerField(min_value=1, label="IQ-coins (1-3)")
     
     def __init__(self, *args, **kwargs):
@@ -16,15 +99,18 @@ class AwardCoinsForm(forms.Form):
                 if user_profile.role == 'admin':
                     # Admins can award coins to all students
                     # Exclude hidden students from award form
-                    self.fields['students'].queryset = Student.objects.filter(is_hidden=False)
+                    # Order by teacher username, then by student name
+                    self.fields['students'].queryset = Student.objects.filter(is_hidden=False).select_related('teacher__userprofile').order_by('teacher__username', 'name')
                 else:
                     # Teachers can only award coins to their own students
                     # Exclude hidden students from award form
-                    self.fields['students'].queryset = Student.objects.filter(teacher=user, is_hidden=False)
+                    # Order by student name
+                    self.fields['students'].queryset = Student.objects.filter(teacher=user, is_hidden=False).order_by('name')
             except:
                 # Default: only show students from classes taught by the current teacher
                 # Exclude hidden students from award form
-                self.fields['students'].queryset = Student.objects.filter(teacher=user, is_hidden=False)
+                # Order by student name
+                self.fields['students'].queryset = Student.objects.filter(teacher=user, is_hidden=False).order_by('name')
 
 class DeductCoinsForm(forms.Form):
     student = forms.ModelChoiceField(queryset=Student.objects.none(), label="Student")

@@ -43,22 +43,28 @@
                     <tr>
                         <td>{{ student.name }}</td>
                         <td>
-                            <span class="badge bg-warning text-dark">{{ student.balance }} IQ</span>
+                            <span class="iq-coin-badge">{{ student.balance }} IQ</span>
                             {% if student.balance < 0 %}
-                                <span class="badge bg-danger">Отрицательный</span>
+                                <span class="status-badge bg-danger">Отрицательный</span>
                             {% endif %}
                         </td>
                         {% if user.userprofile.role == 'teacher' or user.userprofile.role == 'admin' %}
                             <td>{{ student.phone_number|default:"Не указан" }}</td>
-                            <td>{{ student.teacher.username }}</td>
+                            <td>
+                                {% if student.teacher.userprofile.full_name %}
+                                    {{ student.teacher.userprofile.full_name }}
+                                {% else %}
+                                    {{ student.teacher.username }}
+                                {% endif %}
+                            </td>
                             <td>
                                 {% if student.is_active %}
-                                    <span class="badge bg-success">Активен</span>
+                                    <span class="status-badge bg-success">Активен</span>
                                 {% else %}
-                                    <span class="badge bg-secondary">Неактивен</span>
+                                    <span class="status-badge bg-secondary">Неактивен</span>
                                 {% endif %}
                                 {% if student.is_hidden %}
-                                    <span class="badge bg-secondary">Скрыт</span>
+                                    <span class="status-badge bg-secondary">Скрыт</span>
                                 {% endif %}
                             </td>
                             <td>

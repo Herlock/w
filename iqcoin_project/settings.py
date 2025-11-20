@@ -1,11 +1,12 @@
 import os
 from pathlib import Path
+from decouple import config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # For production, you should move this to an environment variable
-SECRET_KEY = os.environ.get('SECRET_KEY', 'vyil&^rhwv4bwb-fauc8zlhdnleo0#oxfj2_u1#d-e*p7+rz')
+SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True

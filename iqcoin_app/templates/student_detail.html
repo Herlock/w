@@ -11,9 +11,9 @@
             <dl class="row">
                 <dt class="col-sm-4">Баланс:</dt>
                 <dd class="col-sm-8">
-                    <span class="badge bg-warning text-dark">{{ student.balance }} IQ</span>
+                    <span class="iq-coin-badge">{{ student.balance }} IQ</span>
                     {% if student.balance < 0 %}
-                        <span class="badge bg-danger">Отрицательный баланс</span>
+                        <span class="status-badge bg-danger">Отрицательный баланс</span>
                     {% endif %}
                 </dd>
                 
@@ -26,18 +26,18 @@
                 <dt class="col-sm-4">Статус:</dt>
                 <dd class="col-sm-8">
                     {% if student.is_active %}
-                        <span class="badge bg-success">Активен</span>
+                        <span class="status-badge bg-success">Активен</span>
                     {% else %}
-                        <span class="badge bg-secondary">Неактивен</span>
+                        <span class="status-badge bg-secondary">Неактивен</span>
                     {% endif %}
                 </dd>
                 
                 <dt class="col-sm-4">Скрыт:</dt>
                 <dd class="col-sm-8">
                     {% if student.is_hidden %}
-                        <span class="badge bg-secondary">Да</span>
+                        <span class="status-badge bg-secondary">Да</span>
                     {% else %}
-                        <span class="badge bg-success">Нет</span>
+                        <span class="status-badge bg-success">Нет</span>
                     {% endif %}
                 </dd>
             </dl>
@@ -61,13 +61,18 @@
                                         Вычет
                                     {% endif %}
                                 </strong>
-                                <span class="badge {% if transaction.type == 'AWARD' %}bg-success{% else %}bg-danger{% endif %}">
+                                <span class="transaction-badge {% if transaction.type == 'AWARD' %}bg-success{% else %}bg-danger{% endif %}">
                                     {{ transaction.amount }}
                                 </span>
                             </div>
                             <small class="text-muted">
                                 {{ transaction.date|date:"d.m.Y H:i" }}<br>
-                                Преподаватель: {{ transaction.teacher.username }}
+                                Преподаватель: 
+                                {% if transaction.teacher.userprofile.full_name %}
+                                    {{ transaction.teacher.userprofile.full_name }}
+                                {% else %}
+                                    {{ transaction.teacher.username }}
+                                {% endif %}
                             </small>
                             {% if transaction.comment %}
                                 <div class="mt-1">

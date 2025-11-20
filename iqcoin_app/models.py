@@ -16,6 +16,8 @@ class UserProfile(models.Model):
     student = models.ForeignKey('Student', on_delete=models.SET_NULL, null=True, blank=True)
     # Full name for better identification
     full_name = models.CharField(max_length=100, blank=True, null=True)
+    # Color for teachers to identify their students in the UI
+    color = models.CharField(max_length=7, blank=True, null=True, help_text="Hex color code (e.g., #FF5733)")
     
     def __str__(self):
         return f"{self.user.username} - {self.get_role_display()}"
@@ -32,7 +34,15 @@ class Student(models.Model):
     is_hidden = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"{self.name} (Teacher: {self.teacher.username})"
+        # Try to get the teacher's full name, fallback to username
+        try:
+            if hasattr(self.teacher, 'userprofile') and self.teacher.userprofile.full_name:
+                teacher_name = self.teacher.userprofile.full_name
+            else:
+                teacher_name = self.teacher.username
+        except:
+            teacher_name = self.teacher.username
+        return f"{self.name} ({teacher_name})"
 
 class Transaction(models.Model):
     TRANSACTION_TYPES = (
@@ -48,4 +58,12 @@ class Transaction(models.Model):
     edited = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"{self.type} {self.amount} for {self.student} by {self.teacher}"
+        # Try to get the teacher's full name, fallback to username
+        try:
+            if hasattr(self.teacher, 'userprofile') and self.teacher.userprofile.full_name:
+                teacher_name = self.teacher.userprofile.full_name
+            else:
+                teacher_name = self.teacher.username
+        except:
+            teacher_name = self.teacher.username
+        return f"{self.type} {self.amount} for {self.student} by {teacher_name}"
