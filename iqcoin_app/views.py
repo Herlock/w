@@ -22,7 +22,15 @@ def user_login(request):
                 user_profile = user.userprofile
             except UserProfile.DoesNotExist:
                 # Create a default profile if it doesn't exist
-                user_profile = UserProfile.objects.create(user=user, role='teacher')
+                # But don't assume it's a teacher - let's check if it's linked to a student
+                if hasattr(user, 'student_set') and user.student_set.exists():
+                    # This user is linked to a student, so they should be a student or parent
+                    student_count = user.student_set.count()
+                    role = 'parent' if student_count > 1 else 'student'
+                    user_profile = UserProfile.objects.create(user=user, role=role)
+                else:
+                    # Default to teacher for staff/admin users
+                    user_profile = UserProfile.objects.create(user=user, role='teacher')
             
             # Redirect based on role
             if user_profile.role == 'student':
@@ -78,7 +86,15 @@ def home(request):
         user_profile = request.user.userprofile
     except UserProfile.DoesNotExist:
         # Create a default profile if it doesn't exist
-        user_profile = UserProfile.objects.create(user=request.user, role='teacher')
+        # But don't assume it's a teacher - let's check if it's linked to a student
+        if hasattr(request.user, 'student_set') and request.user.student_set.exists():
+            # This user is linked to a student, so they should be a student or parent
+            student_count = request.user.student_set.count()
+            role = 'parent' if student_count > 1 else 'student'
+            user_profile = UserProfile.objects.create(user=request.user, role=role)
+        else:
+            # Default to teacher for staff/admin users
+            user_profile = UserProfile.objects.create(user=request.user, role='teacher')
     
     # Check if this is a student or parent
     if user_profile.role in ['student', 'parent']:
@@ -123,7 +139,7 @@ def home(request):
             'students': students,
             'recent_transactions': recent_transactions,
         }
-        return render(request, 'home.html', context)
+        return render(request, 'teacher_home.html', context)
     
     elif user_profile.role == 'admin':
         # Admins see all non-hidden students
@@ -139,7 +155,7 @@ def home(request):
             'students': students,
             'recent_transactions': recent_transactions,
         }
-        return render(request, 'home.html', context)
+        return render(request, 'admin_home.html', context)
     
     # Default fallback
     return render(request, 'home.html')
@@ -151,7 +167,15 @@ def award_coins(request):
         user_profile = request.user.userprofile
     except UserProfile.DoesNotExist:
         # Create a default profile if it doesn't exist
-        user_profile = UserProfile.objects.create(user=request.user, role='teacher')
+        # But don't assume it's a teacher - let's check if it's linked to a student
+        if hasattr(request.user, 'student_set') and request.user.student_set.exists():
+            # This user is linked to a student, so they should be a student or parent
+            student_count = request.user.student_set.count()
+            role = 'parent' if student_count > 1 else 'student'
+            user_profile = UserProfile.objects.create(user=request.user, role=role)
+        else:
+            # Default to teacher for staff/admin users
+            user_profile = UserProfile.objects.create(user=request.user, role='teacher')
     
     # Only teachers and admins can award coins
     if user_profile.role not in ['teacher', 'admin']:
@@ -192,7 +216,15 @@ def deduct_coins(request):
         user_profile = request.user.userprofile
     except UserProfile.DoesNotExist:
         # Create a default profile if it doesn't exist
-        user_profile = UserProfile.objects.create(user=request.user, role='teacher')
+        # But don't assume it's a teacher - let's check if it's linked to a student
+        if hasattr(request.user, 'student_set') and request.user.student_set.exists():
+            # This user is linked to a student, so they should be a student or parent
+            student_count = request.user.student_set.count()
+            role = 'parent' if student_count > 1 else 'student'
+            user_profile = UserProfile.objects.create(user=request.user, role=role)
+        else:
+            # Default to teacher for staff/admin users
+            user_profile = UserProfile.objects.create(user=request.user, role='teacher')
     
     # Only teachers and admins can deduct coins
     if user_profile.role not in ['teacher', 'admin']:
@@ -237,7 +269,15 @@ def transaction_history(request):
         user_profile = request.user.userprofile
     except UserProfile.DoesNotExist:
         # Create a default profile if it doesn't exist
-        user_profile = UserProfile.objects.create(user=request.user, role='teacher')
+        # But don't assume it's a teacher - let's check if it's linked to a student
+        if hasattr(request.user, 'student_set') and request.user.student_set.exists():
+            # This user is linked to a student, so they should be a student or parent
+            student_count = request.user.student_set.count()
+            role = 'parent' if student_count > 1 else 'student'
+            user_profile = UserProfile.objects.create(user=request.user, role=role)
+        else:
+            # Default to teacher for staff/admin users
+            user_profile = UserProfile.objects.create(user=request.user, role='teacher')
     
     # Role-based access
     if user_profile.role == 'student':
@@ -337,7 +377,15 @@ def student_list(request):
         user_profile = request.user.userprofile
     except UserProfile.DoesNotExist:
         # Create a default profile if it doesn't exist
-        user_profile = UserProfile.objects.create(user=request.user, role='teacher')
+        # But don't assume it's a teacher - let's check if it's linked to a student
+        if hasattr(request.user, 'student_set') and request.user.student_set.exists():
+            # This user is linked to a student, so they should be a student or parent
+            student_count = request.user.student_set.count()
+            role = 'parent' if student_count > 1 else 'student'
+            user_profile = UserProfile.objects.create(user=request.user, role=role)
+        else:
+            # Default to teacher for staff/admin users
+            user_profile = UserProfile.objects.create(user=request.user, role='teacher')
     
     # Role-based access
     if user_profile.role == 'student':
@@ -383,7 +431,15 @@ def student_detail(request, student_id):
         user_profile = request.user.userprofile
     except UserProfile.DoesNotExist:
         # Create a default profile if it doesn't exist
-        user_profile = UserProfile.objects.create(user=request.user, role='teacher')
+        # But don't assume it's a teacher - let's check if it's linked to a student
+        if hasattr(request.user, 'student_set') and request.user.student_set.exists():
+            # This user is linked to a student, so they should be a student or parent
+            student_count = request.user.student_set.count()
+            role = 'parent' if student_count > 1 else 'student'
+            user_profile = UserProfile.objects.create(user=request.user, role=role)
+        else:
+            # Default to teacher for staff/admin users
+            user_profile = UserProfile.objects.create(user=request.user, role='teacher')
     
     # Role-based access
     if user_profile.role == 'student':
@@ -452,7 +508,15 @@ def student_edit(request, student_id):
     try:
         user_profile = request.user.userprofile
     except UserProfile.DoesNotExist:
-        user_profile = UserProfile.objects.create(user=request.user, role='teacher')
+        # But don't assume it's a teacher - let's check if it's linked to a student
+        if hasattr(request.user, 'student_set') and request.user.student_set.exists():
+            # This user is linked to a student, so they should be a student or parent
+            student_count = request.user.student_set.count()
+            role = 'parent' if student_count > 1 else 'student'
+            user_profile = UserProfile.objects.create(user=request.user, role=role)
+        else:
+            # Default to teacher for staff/admin users
+            user_profile = UserProfile.objects.create(user=request.user, role='teacher')
     
     # Role-based access
     if user_profile.role == 'admin':

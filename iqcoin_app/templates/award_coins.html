@@ -28,7 +28,7 @@
                         <label class="form-label">Выберите учеников</label>
                         <div class="row" id="students-container">
                             {% for choice in form.students %}
-                                <div class="col-md-6 col-lg-4 mb-2 student-item" style="cursor: pointer;" onclick="toggleCheckbox(this)">
+                                <div class="col-md-6 col-lg-4 mb-2 student-item" style="cursor: pointer;">
                                     <div class="form-check border rounded p-3 h-100 student-card">
                                         {{ choice.tag }}
                                         <label class="form-check-label w-100" for="{{ choice.id_for_label }}" style="cursor: pointer;">

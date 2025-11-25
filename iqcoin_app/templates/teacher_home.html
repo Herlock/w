@@ -1,18 +1,17 @@
 {% extends 'base.html' %}
 
-{% block title %}Home - IQ-Coin Tracker{% endblock %}
+{% block title %}Teacher Dashboard - IQ-Coin Tracker{% endblock %}
 
 {% block content %}
 <div class="row">
     <div class="col-md-8">
-        <h2>Балансы учеников</h2>
+        <h2>My Students</h2>
         <div class="table-responsive">
             <table class="table table-striped">
                 <thead>
                     <tr>
-                        <th>Имя</th>
-                        <th>Преподаватель</th>
-                        <th>Баланс</th>
+                        <th>Student Name</th>
+                        <th>Balance</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -24,19 +23,12 @@
                             </a>
                         </td>
                         <td>
-                            {% if student.teacher.userprofile.full_name %}
-                                {{ student.teacher.userprofile.full_name }}
-                            {% else %}
-                                {{ student.teacher.username }}
-                            {% endif %}
-                        </td>
-                        <td>
                             <span class="badge iq-coin-badge">{{ student.balance }} IQ</span>
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="3" class="text-center">Студены не найдены</td>
+                        <td colspan="2" class="text-center">No students found</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -45,15 +37,15 @@
     </div>
     
     <div class="col-md-4">
-        <h3>Быстрые действия:</h3>
+        <h3>Quick Actions</h3>
         <div class="d-grid gap-2">
-            <a href="{% url 'award_coins' %}" class="btn btn-success">Наградить Айкьюшками</a>
-            <a href="{% url 'deduct_coins' %}" class="btn btn-warning">Списать айкьюшки</a>
-            <a href="{% url 'transaction_history' %}" class="btn btn-info">История начислений</a>
-            <a href="{% url 'student_list' %}" class="btn btn-primary">Управление учениками</a>
+            <a href="{% url 'award_coins' %}" class="btn btn-success">Award IQ Coins</a>
+            <a href="{% url 'deduct_coins' %}" class="btn btn-warning">Deduct IQ Coins</a>
+            <a href="{% url 'transaction_history' %}" class="btn btn-info">Transaction History</a>
+            <a href="{% url 'student_list' %}" class="btn btn-primary">Manage Students</a>
         </div>
         
-        <h4 class="mt-4">История начислений</h4>
+        <h4 class="mt-4">Recent Transactions</h4>
         <div class="list-group">
             {% for transaction in recent_transactions %}
             <div class="list-group-item {% if transaction.edited %}edited-transaction{% endif %}">
@@ -67,11 +59,8 @@
                     <small>{{ transaction.date|date:"M d, H:i" }}</small>
                 </div>
                 <p class="mb-1">
-                    By 
-                    {% if transaction.teacher.userprofile.full_name %}
-                        {{ transaction.teacher.userprofile.full_name }}
-                    {% else %}
-                        {{ transaction.teacher.username }}
+                    {% if transaction.comment %}
+                        {{ transaction.comment|truncatewords:5 }}
                     {% endif %}
                 </p>
                 {% if transaction.edited %}
@@ -80,7 +69,7 @@
             </div>
             {% empty %}
             <div class="list-group-item">
-                <p class="mb-1">Нет предыдущих начислений</p>
+                <p class="mb-1">No recent transactions</p>
             </div>
             {% endfor %}
         </div>

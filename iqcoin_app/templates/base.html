@@ -59,20 +59,26 @@
             padding: 5px 10px;
             border-radius: 5px;
             display: inline-block;
-            min-width: 80px;
+            min-width: 100px; /* Increased width to accommodate 3 digits */
             text-align: center;
+            white-space: nowrap; /* Prevent text wrapping */
         }
-    
+
         .transaction-badge {
             display: inline-block;
             min-width: 80px;
             text-align: center;
+            vertical-align: middle; /* Add vertical alignment */
+            line-height: 1.5; /* Adjust line height for better vertical centering */
         }
-    
+
         .status-badge {
             display: inline-block;
             min-width: 100px;
             text-align: center;
+            vertical-align: middle;
+            font-family: 'Nunito', sans-serif;
+            font-weight: 400;
         }
     </style>
 </head>
