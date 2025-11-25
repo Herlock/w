@@ -80,6 +80,10 @@
             font-family: 'Nunito', sans-serif;
             font-weight: 400;
         }
+
+        tbody, td, tfoot, th, thead, tr {
+            vertical-align: middle;
+        }
     </style>
 </head>
 <body>
@@ -114,11 +118,11 @@
                         {% if user.userprofile.role == 'teacher' or user.userprofile.role == 'admin' %}
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" id="studentManagementDropdown" role="button" data-bs-toggle="dropdown">
-                                    Студенты
+                                    Ученики
                                 </a>
                                 <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" href="{% url 'student_list' %}">Список студентов</a></li>
-                                    <li><a class="dropdown-item" href="{% url 'student_create' %}">Добавить студента</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'student_list' %}">Список учеников</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'student_create' %}">Добавить ученика</a></li>
                                 </ul>
                             </li>
                         {% endif %}
