@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
 
-{% block title %}История транзакций{% endblock %}
+{% block title %}История операций{% endblock %}
 
 {% block content %}
 <div class="container">
-    <h2>История транзакций</h2>
+    <h2>История операций</h2>
     
     <!-- Filter Form -->
     <form method="get" class="mb-4">
@@ -67,9 +67,9 @@
                     <tr>
                         <td>
                             {% if transaction.type == 'AWARD' %}
-                                <span class="transaction-badge bg-success">Награда</span>
+                                <span class="badge bg-success">Награда</span>
                             {% else %}
-                                <span class="transaction-badge bg-danger">Вычет</span>
+                                <span class="badge bg-danger">Вычет</span>
                             {% endif %}
                             {% if transaction.edited %}
                                 <span class="status-badge bg-warning text-dark">Изменено</span>
@@ -101,11 +101,11 @@
         </div>
         
         <div class="alert alert-info">
-            Всего транзакций: {{ transactions|length }}
+            Всего операций: {{ transactions|length }}
         </div>
     {% else %}
         <div class="text-center">
-            <h4 class="text-muted">Транзакции не найдены</h4>
+            <h4 class="text-muted">Операцции не найдены</h4>
             {% if current_student or current_type or search_query %}
                 <p>Попробуйте изменить критерии фильтрации</p>
             {% endif %}

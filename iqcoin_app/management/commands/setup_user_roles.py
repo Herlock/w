@@ -86,15 +86,29 @@ class Command(BaseCommand):
                         )
                     )
 
-        # For all other users, set as teachers by default
+        # For all other users, set appropriate default roles
         all_users = User.objects.all()
         for user in all_users:
             profile, created = UserProfile.objects.get_or_create(user=user)
             if created:
-                profile.role = 'teacher'
-                profile.save()
-                self.stdout.write(
-                    self.style.SUCCESS(
-                        f'Created profile for {user.username} as teacher (default)'
+                # But don't assume it's a teacher - let's check if it's linked to a student
+                if hasattr(user, 'student_set') and user.student_set.exists():
+                    # This user is linked to a student, so they should be a student or parent
+                    student_count = user.student_set.count()
+                    role = 'parent' if student_count > 1 else 'student'
+                    profile.role = role
+                    profile.save()
+                    self.stdout.write(
+                        self.style.SUCCESS(
+                            f'Created profile for {user.username} as {role} (default)'
+                        )
                     )
-                )
+                else:
+                    # Default to teacher for staff/admin users
+                    profile.role = 'teacher'
+                    profile.save()
+                    self.stdout.write(
+                        self.style.SUCCESS(
+                            f'Created profile for {user.username} as teacher (default)'
+                        )
+                    )

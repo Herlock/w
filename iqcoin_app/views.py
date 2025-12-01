@@ -11,6 +11,10 @@ from .forms import AwardCoinsForm, DeductCoinsForm, EditTransactionForm, Student
 from .decorators import student_required, teacher_required, admin_required, teacher_or_admin_required, role_required
 
 def user_login(request):
+    # If user is already authenticated, redirect to home page
+    if request.user.is_authenticated:
+        return redirect('home')
+    
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
@@ -22,7 +26,15 @@ def user_login(request):
                 user_profile = user.userprofile
             except UserProfile.DoesNotExist:
                 # Create a default profile if it doesn't exist
-                user_profile = UserProfile.objects.create(user=user, role='teacher')
+                # But don't assume it's a teacher - let's check if it's linked to a student
+                if hasattr(user, 'student_set') and user.student_set.exists():
+                    # This user is linked to a student, so they should be a student or parent
+                    student_count = user.student_set.count()
+                    role = 'parent' if student_count > 1 else 'student'
+                    user_profile = UserProfile.objects.create(user=user, role=role)
+                else:
+                    # Default to teacher for staff/admin users
+                    user_profile = UserProfile.objects.create(user=user, role='teacher')
             
             # Redirect based on role
             if user_profile.role == 'student':
@@ -34,7 +46,7 @@ def user_login(request):
             else:
                 return redirect('home')  # Default home
         else:
-            messages.error(request, 'Invalid username or password.')
+            messages.error(request, 'Неправильный логин или пароль.')
     return render(request, 'login.html')
 
 def student_login(request):
@@ -42,6 +54,10 @@ def student_login(request):
     Custom login view for students using phone number.
     Students don't need a password, just their phone number.
     """
+    # If user is already authenticated, redirect to home page
+    if request.user.is_authenticated:
+        return redirect('home')
+    
     if request.method == 'POST':
         phone_number = request.POST.get('phone_number', '').strip()
         if phone_number:
@@ -49,11 +65,11 @@ def student_login(request):
             user = authenticate(request, phone_number=phone_number)
             if user is not None:
                 login(request, user)
-                return redirect('home')  # Will show student home
+                return redirect('home')
             else:
-                messages.error(request, 'Invalid phone number or student not found.')
+                messages.error(request, 'Неправильный номер телефона или ученик не найден.')
         else:
-            messages.error(request, 'Please enter your phone number.')
+            messages.error(request, 'Пожалуйста, введите ваш номер телефона.')
     
     return render(request, 'student_login.html')
 
@@ -78,7 +94,15 @@ def home(request):
         user_profile = request.user.userprofile
     except UserProfile.DoesNotExist:
         # Create a default profile if it doesn't exist
-        user_profile = UserProfile.objects.create(user=request.user, role='teacher')
+        # But don't assume it's a teacher - let's check if it's linked to a student
+        if hasattr(request.user, 'student_set') and request.user.student_set.exists():
+            # This user is linked to a student, so they should be a student or parent
+            student_count = request.user.student_set.count()
+            role = 'parent' if student_count > 1 else 'student'
+            user_profile = UserProfile.objects.create(user=request.user, role=role)
+        else:
+            # Default to teacher for staff/admin users
+            user_profile = UserProfile.objects.create(user=request.user, role='teacher')
     
     # Check if this is a student or parent
     if user_profile.role in ['student', 'parent']:
@@ -123,7 +147,7 @@ def home(request):
             'students': students,
             'recent_transactions': recent_transactions,
         }
-        return render(request, 'home.html', context)
+        return render(request, 'teacher_home.html', context)
     
     elif user_profile.role == 'admin':
         # Admins see all non-hidden students
@@ -139,7 +163,7 @@ def home(request):
             'students': students,
             'recent_transactions': recent_transactions,
         }
-        return render(request, 'home.html', context)
+        return render(request, 'admin_home.html', context)
     
     # Default fallback
     return render(request, 'home.html')
@@ -151,13 +175,21 @@ def award_coins(request):
         user_profile = request.user.userprofile
     except UserProfile.DoesNotExist:
         # Create a default profile if it doesn't exist
-        user_profile = UserProfile.objects.create(user=request.user, role='teacher')
+        # But don't assume it's a teacher - let's check if it's linked to a student
+        if hasattr(request.user, 'student_set') and request.user.student_set.exists():
+            # This user is linked to a student, so they should be a student or parent
+            student_count = request.user.student_set.count()
+            role = 'parent' if student_count > 1 else 'student'
+            user_profile = UserProfile.objects.create(user=request.user, role=role)
+        else:
+            # Default to teacher for staff/admin users
+            user_profile = UserProfile.objects.create(user=request.user, role='teacher')
     
     # Only teachers and admins can award coins
     if user_profile.role not in ['teacher', 'admin']:
         if user_profile.role == 'parent':
-            return HttpResponseForbidden("Parents cannot award coins. Please contact a teacher or administrator.")
-        return HttpResponseForbidden("Only teachers and admins can award coins.")
+            return HttpResponseForbidden("Родители не могут начислять монеты. Пожалуйста, свяжитесь с учителем или администратором.")
+        return HttpResponseForbidden("Только учителя и администраторы могут начислять монеты.")
     
     if request.method == 'POST':
         form = AwardCoinsForm(request.POST, user=request.user)
@@ -178,7 +210,7 @@ def award_coins(request):
                     student.balance += amount
                     student.save()
             
-            messages.success(request, f'Successfully awarded {amount} IQ-coins to {students.count()} students.')
+            messages.success(request, f'Успешно начислено {amount} Айкьюшек {students.count()} ученикам.')
             return redirect('home')
     else:
         form = AwardCoinsForm(user=request.user)
@@ -192,43 +224,96 @@ def deduct_coins(request):
         user_profile = request.user.userprofile
     except UserProfile.DoesNotExist:
         # Create a default profile if it doesn't exist
-        user_profile = UserProfile.objects.create(user=request.user, role='teacher')
+        # But don't assume it's a teacher - let's check if it's linked to a student
+        if hasattr(request.user, 'student_set') and request.user.student_set.exists():
+            # This user is linked to a student, so they should be a student or parent
+            student_count = request.user.student_set.count()
+            role = 'parent' if student_count > 1 else 'student'
+            user_profile = UserProfile.objects.create(user=request.user, role=role)
+        else:
+            # Default to teacher for staff/admin users
+            user_profile = UserProfile.objects.create(user=request.user, role='teacher')
     
     # Only teachers and admins can deduct coins
     if user_profile.role not in ['teacher', 'admin']:
         if user_profile.role == 'parent':
-            return HttpResponseForbidden("Parents cannot deduct coins. Please contact a teacher or administrator.")
-        return HttpResponseForbidden("Only teachers and admins can deduct coins.")
+            return HttpResponseForbidden("Родители не могут списывать монеты. Пожалуйста, свяжитесь с учителем или администратором.")
+        return HttpResponseForbidden("Только учителя и администраторы могут списывать монеты.")
     
     if request.method == 'POST':
+        # Create a form instance but don't validate yet since we're using custom student field
         form = DeductCoinsForm(request.POST, user=request.user)
-        if form.is_valid():
-            student = form.cleaned_data['student']
-            amount = form.cleaned_data['amount']
-            comment = form.cleaned_data['comment']
-            
-            if student.balance >= amount:
-                with db_transaction.atomic():
-                    # Create transaction record
-                    Transaction.objects.create(
-                        type='DEDUCT',
-                        amount=amount,
-                        student=student,
-                        teacher=request.user,
-                        comment=comment
-                    )
-                    # Update student balance
-                    student.balance -= amount
-                    student.save()
+        
+        # Get student ID from our custom field
+        student_id = request.POST.get('student')
+        amount = request.POST.get('amount')
+        comment = request.POST.get('comment', '')
+        
+        # Validate that we have a student ID
+        if not student_id:
+            messages.error(request, 'Пожалуйста, выберите ученика.')
+        else:
+            try:
+                # Get the student object
+                if user_profile.role == 'admin':
+                    student = Student.objects.get(id=student_id, is_hidden=False)
+                else:
+                    student = Student.objects.get(id=student_id, teacher=request.user, is_hidden=False)
                 
-                messages.success(request, f'Successfully deducted {amount} IQ-coins from {student.name}.')
-                return redirect('home')
-            else:
-                messages.error(request, f'{student.name} has insufficient balance. Current balance: {student.balance}')
+                # Validate amount
+                try:
+                    amount = int(amount)
+                    if amount < 1:
+                        messages.error(request, 'Количество должно быть положительным числом.')
+                    elif student.balance >= amount:
+                        with db_transaction.atomic():
+                            # Create transaction record
+                            Transaction.objects.create(
+                                type='DEDUCT',
+                                amount=amount,
+                                student=student,
+                                teacher=request.user,
+                                comment=comment
+                            )
+                            # Update student balance
+                            student.balance -= amount
+                            student.save()
+                        
+                        messages.success(request, f'Успешно списано {amount} Айкьюшек у {student.name}.')
+                        return redirect('home')
+                    else:
+                        messages.error(request, f'{student.name} имеет недостаточный баланс. Текущий баланс: {student.balance}')
+                except (ValueError, TypeError):
+                    messages.error(request, 'Пожалуйста, введите корректное количество.')
+            except Student.DoesNotExist:
+                messages.error(request, 'Выбранный ученик не найден.')
     else:
         form = DeductCoinsForm(user=request.user)
     
-    return render(request, 'deduct_coins.html', {'form': form})
+    # Get the list of students for the searchable dropdown
+    if user_profile.role == 'admin':
+        # Admins can deduct coins from all students
+        # Exclude hidden students from deduct form
+        # Order students alphabetically by name
+        students = Student.objects.filter(is_hidden=False).order_by('name')
+    else:
+        # Teachers can only deduct coins from their own students
+        # Exclude hidden students from deduct form
+        # Order students alphabetically by name
+        students = Student.objects.filter(teacher=request.user, is_hidden=False).order_by('name')
+    
+    # Convert students to JSON format for the template
+    students_json = [
+        {
+            'id': student.id,
+            'full_name': student.name,
+            'balance': student.balance,
+            'teacher_name': getattr(student.teacher.userprofile, 'full_name', student.teacher.username) if hasattr(student.teacher, 'userprofile') else student.teacher.username
+        }
+        for student in students
+    ]
+    
+    return render(request, 'deduct_coins.html', {'form': form, 'students_json': students_json})
 
 @login_required
 def transaction_history(request):
@@ -237,7 +322,15 @@ def transaction_history(request):
         user_profile = request.user.userprofile
     except UserProfile.DoesNotExist:
         # Create a default profile if it doesn't exist
-        user_profile = UserProfile.objects.create(user=request.user, role='teacher')
+        # But don't assume it's a teacher - let's check if it's linked to a student
+        if hasattr(request.user, 'student_set') and request.user.student_set.exists():
+            # This user is linked to a student, so they should be a student or parent
+            student_count = request.user.student_set.count()
+            role = 'parent' if student_count > 1 else 'student'
+            user_profile = UserProfile.objects.create(user=request.user, role=role)
+        else:
+            # Default to teacher for staff/admin users
+            user_profile = UserProfile.objects.create(user=request.user, role='teacher')
     
     # Role-based access
     if user_profile.role == 'student':
@@ -303,7 +396,7 @@ def edit_transaction(request, transaction_id):
     
     # Only allow editing award transactions
     if trans.type != 'AWARD':
-        messages.error(request, 'Only award transactions can be edited.')
+        messages.error(request, 'Можно редактировать только наградные транзакции.')
         return redirect('transaction_history')
     
     if request.method == 'POST':
@@ -323,7 +416,7 @@ def edit_transaction(request, transaction_id):
                 trans.edited = True
                 trans.save()
             
-            messages.success(request, f'Transaction updated successfully. Balance adjusted by {difference} coins.')
+            messages.success(request, f'Транзакция успешно обновлена. Баланс скорректирован на {difference} монет.')
             return redirect('transaction_history')
     else:
         form = EditTransactionForm(instance=trans)
@@ -337,7 +430,15 @@ def student_list(request):
         user_profile = request.user.userprofile
     except UserProfile.DoesNotExist:
         # Create a default profile if it doesn't exist
-        user_profile = UserProfile.objects.create(user=request.user, role='teacher')
+        # But don't assume it's a teacher - let's check if it's linked to a student
+        if hasattr(request.user, 'student_set') and request.user.student_set.exists():
+            # This user is linked to a student, so they should be a student or parent
+            student_count = request.user.student_set.count()
+            role = 'parent' if student_count > 1 else 'student'
+            user_profile = UserProfile.objects.create(user=request.user, role=role)
+        else:
+            # Default to teacher for staff/admin users
+            user_profile = UserProfile.objects.create(user=request.user, role='teacher')
     
     # Role-based access
     if user_profile.role == 'student':
@@ -383,7 +484,15 @@ def student_detail(request, student_id):
         user_profile = request.user.userprofile
     except UserProfile.DoesNotExist:
         # Create a default profile if it doesn't exist
-        user_profile = UserProfile.objects.create(user=request.user, role='teacher')
+        # But don't assume it's a teacher - let's check if it's linked to a student
+        if hasattr(request.user, 'student_set') and request.user.student_set.exists():
+            # This user is linked to a student, so they should be a student or parent
+            student_count = request.user.student_set.count()
+            role = 'parent' if student_count > 1 else 'student'
+            user_profile = UserProfile.objects.create(user=request.user, role=role)
+        else:
+            # Default to teacher for staff/admin users
+            user_profile = UserProfile.objects.create(user=request.user, role='teacher')
     
     # Role-based access
     if user_profile.role == 'student':
@@ -391,7 +500,7 @@ def student_detail(request, student_id):
         if user_profile.student and user_profile.student.id == student_id:
             student = get_object_or_404(Student, id=student_id)
         else:
-            return HttpResponseForbidden("You don't have permission to view this student's details.")
+            return HttpResponseForbidden("У вас нет разрешения на просмотр информации об этом ученике.")
     elif user_profile.role == 'teacher':
         # Teachers can only see their own students
         student = get_object_or_404(Student, id=student_id, teacher=request.user)
@@ -439,7 +548,7 @@ def student_create(request):
                 profile.role = 'student'
                 profile.save()
             
-            messages.success(request, f'Student "{student.name}" has been created successfully.')
+            messages.success(request, f'Ученик "{student.name}" успешно создан.')
             return redirect('student_list')
     else:
         form = StudentForm(user=request.user)
@@ -452,7 +561,15 @@ def student_edit(request, student_id):
     try:
         user_profile = request.user.userprofile
     except UserProfile.DoesNotExist:
-        user_profile = UserProfile.objects.create(user=request.user, role='teacher')
+        # But don't assume it's a teacher - let's check if it's linked to a student
+        if hasattr(request.user, 'student_set') and request.user.student_set.exists():
+            # This user is linked to a student, so they should be a student or parent
+            student_count = request.user.student_set.count()
+            role = 'parent' if student_count > 1 else 'student'
+            user_profile = UserProfile.objects.create(user=request.user, role=role)
+        else:
+            # Default to teacher for staff/admin users
+            user_profile = UserProfile.objects.create(user=request.user, role='teacher')
     
     # Role-based access
     if user_profile.role == 'admin':
@@ -460,7 +577,7 @@ def student_edit(request, student_id):
     elif user_profile.role == 'teacher':
         student = get_object_or_404(Student, id=student_id, teacher=request.user)
     else:
-        return HttpResponseForbidden("You don't have permission to edit students.")
+        return HttpResponseForbidden("У вас нет разрешения на редактирование учеников.")
     
     if request.method == 'POST':
         form = StudentEditForm(request.POST, instance=student, user=request.user)
@@ -508,9 +625,9 @@ def student_edit(request, student_id):
             
             # If teacher was changed, add a comment about the transfer
             if old_teacher != new_teacher:
-                messages.info(request, f'Student transferred from "{old_teacher.username}" to "{new_teacher.username}".')
+                messages.info(request, f'Ученик переведен с "{old_teacher.username}" на "{new_teacher.username}".')
             
-            messages.success(request, f'Student "{updated_student.name}" has been updated successfully.')
+            messages.success(request, f'Ученик "{updated_student.name}" успешно обновлен.')
             return redirect('student_detail', student_id=updated_student.id)
     else:
         form = StudentEditForm(instance=student, user=request.user)

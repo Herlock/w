@@ -4,6 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}IQ Coin System{% endblock %}</title>
+    <!-- Favicon -->
+    {% load static %}
+    <link rel="icon" type="image/png" href="{% static 'images/PageLogo.png' %}" sizes="32x32">
+    <link rel="icon" type="image/png" href="{% static 'images/PageLogo.png' %}" sizes="16x16">
+    <link rel="shortcut icon" type="image/png" href="{% static 'images/PageLogo.png' %}">
+    <link rel="apple-touch-icon" href="{% static 'images/PageLogo.png' %}">
+    <!-- Fallback for older browsers -->
+    <link rel="icon" href="{% static 'images/PageLogo.png' %}">
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -59,20 +67,30 @@
             padding: 5px 10px;
             border-radius: 5px;
             display: inline-block;
-            min-width: 80px;
+            min-width: 100px; /* Increased width to accommodate 3 digits */
             text-align: center;
+            white-space: nowrap; /* Prevent text wrapping */
         }
-    
+
         .transaction-badge {
             display: inline-block;
             min-width: 80px;
             text-align: center;
+            vertical-align: middle; /* Add vertical alignment */
+            line-height: 1.5; /* Adjust line height for better vertical centering */
         }
-    
+
         .status-badge {
             display: inline-block;
             min-width: 100px;
             text-align: center;
+            vertical-align: middle;
+            font-family: 'Nunito', sans-serif;
+            font-weight: 400;
+        }
+
+        tbody, td, tfoot, th, thead, tr {
+            vertical-align: middle;
         }
     </style>
 </head>
@@ -80,7 +98,6 @@
     <!-- Navigation Bar -->
     <nav class="navbar navbar-expand-lg  fixed-top">
         <div class="container">
-            {% load static %}
             <a class="navbar-brand" href="{% url 'home' %}">
                 <img src="{% static 'images/iqLogo.png' %}" alt="IQ Coin Logo">
             </a>
@@ -108,11 +125,11 @@
                         {% if user.userprofile.role == 'teacher' or user.userprofile.role == 'admin' %}
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" id="studentManagementDropdown" role="button" data-bs-toggle="dropdown">
-                                    Студенты
+                                    Ученики
                                 </a>
                                 <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" href="{% url 'student_list' %}">Список студентов</a></li>
-                                    <li><a class="dropdown-item" href="{% url 'student_create' %}">Добавить студента</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'student_list' %}">Список учеников</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'student_create' %}">Добавить ученика</a></li>
                                 </ul>
                             </li>
                         {% endif %}
@@ -127,7 +144,7 @@
                                 {% if user.userprofile.role == 'student' and user.userprofile.student %}
                                     <span class="coin-balance">Баланс: {{ user.userprofile.student.balance }} IQ</span>
                                 {% endif %}
-                                Привет, {% if user.userprofile.full_name %} {{ user.userprofile.full_name }}{% endif %}!
+                                Привет, {% if user.userprofile.full_name %} {{ user.userprofile.full_name }} {%else %} ученик! {% endif %}!
                             </span>
                         </li>
                         <li class="nav-item">

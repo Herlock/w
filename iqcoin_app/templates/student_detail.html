@@ -26,18 +26,18 @@
                 <dt class="col-sm-4">Статус:</dt>
                 <dd class="col-sm-8">
                     {% if student.is_active %}
-                        <span class="status-badge bg-success">Активен</span>
+                        <span class="status-badge badge bg-success">Активен</span>
                     {% else %}
-                        <span class="status-badge bg-secondary">Неактивен</span>
+                        <span class="status-badge badge bg-secondary">Неактивен</span>
                     {% endif %}
                 </dd>
                 
                 <dt class="col-sm-4">Скрыт:</dt>
                 <dd class="col-sm-8">
                     {% if student.is_hidden %}
-                        <span class="status-badge bg-secondary">Да</span>
+                        <span class="status-badge badge bg-secondary">Да</span>
                     {% else %}
-                        <span class="status-badge bg-success">Нет</span>
+                        <span class="status-badge badge bg-success">Нет</span>
                     {% endif %}
                 </dd>
             </dl>
@@ -48,7 +48,7 @@
         </div>
         
         <div class="col-md-4">
-            <h3>Последние транзакции</h3>
+            <h3>Последние операции</h3>
             {% if recent_transactions %}
                 <div class="list-group">
                     {% for transaction in recent_transactions %}
@@ -61,13 +61,13 @@
                                         Вычет
                                     {% endif %}
                                 </strong>
-                                <span class="transaction-badge {% if transaction.type == 'AWARD' %}bg-success{% else %}bg-danger{% endif %}">
+                                <span class="transaction-badge badge {% if transaction.type == 'AWARD' %}bg-success{% else %}bg-danger{% endif %}">
                                     {{ transaction.amount }}
                                 </span>
                             </div>
                             <small class="text-muted">
                                 {{ transaction.date|date:"d.m.Y H:i" }}<br>
-                                Преподаватель: 
+                                Педагог: 
                                 {% if transaction.teacher.userprofile.full_name %}
                                     {{ transaction.teacher.userprofile.full_name }}
                                 {% else %}

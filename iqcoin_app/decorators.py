@@ -16,15 +16,23 @@ def role_required(allowed_roles):
             try:
                 user_profile = request.user.userprofile
             except UserProfile.DoesNotExist:
-                # If no profile exists, create one with default teacher role
-                user_profile = UserProfile.objects.create(user=request.user, role='teacher')
+                # If no profile exists, create one with appropriate role
+                # But don't assume it's a teacher - let's check if it's linked to a student
+                if hasattr(request.user, 'student_set') and request.user.student_set.exists():
+                    # This user is linked to a student, so they should be a student or parent
+                    student_count = request.user.student_set.count()
+                    role = 'parent' if student_count > 1 else 'student'
+                    user_profile = UserProfile.objects.create(user=request.user, role=role)
+                else:
+                    # Default to teacher for staff/admin users
+                    user_profile = UserProfile.objects.create(user=request.user, role='teacher')
             
             # Check if user's role is in allowed roles
             if user_profile.role in allowed_roles:
                 return view_func(request, *args, **kwargs)
             else:
                 # Return forbidden response or redirect to appropriate page
-                return HttpResponseForbidden("You don't have permission to access this page.")
+                return HttpResponseForbidden("У вас нет разрешения на доступ к этой странице.")
         return _wrapped_view
     return decorator
 

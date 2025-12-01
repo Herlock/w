@@ -86,8 +86,8 @@ class StudentWithTeacherWidget(forms.CheckboxSelectMultiple):
         return mark_safe(html + js_code)
 
 class AwardCoinsForm(forms.Form):
-    students = forms.ModelMultipleChoiceField(queryset=Student.objects.none(), widget=StudentWithTeacherWidget)
-    amount = forms.IntegerField(min_value=1, label="IQ-coins (1-3)")
+    students = forms.ModelMultipleChoiceField(queryset=Student.objects.none(), widget=StudentWithTeacherWidget, label="Выберите учеников")
+    amount = forms.IntegerField(min_value=1, label="Количество Айкьюшек (1-3)")
     
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
@@ -113,9 +113,9 @@ class AwardCoinsForm(forms.Form):
                 self.fields['students'].queryset = Student.objects.filter(teacher=user, is_hidden=False).order_by('name')
 
 class DeductCoinsForm(forms.Form):
-    student = forms.ModelChoiceField(queryset=Student.objects.none(), label="Student")
-    amount = forms.IntegerField(min_value=1, label="Amount")
-    comment = forms.CharField(widget=forms.Textarea, required=True, label="Comment")
+    student = forms.ModelChoiceField(queryset=Student.objects.none(), label="Ученик")
+    amount = forms.IntegerField(min_value=1, label="Количество")
+    comment = forms.CharField(widget=forms.Textarea, required=True, label="Комментарий")
     
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
@@ -127,15 +127,18 @@ class DeductCoinsForm(forms.Form):
                 if user_profile.role == 'admin':
                     # Admins can deduct coins from all students
                     # Exclude hidden students from deduct form
-                    self.fields['student'].queryset = Student.objects.filter(is_hidden=False)
+                    # Order students alphabetically by name
+                    self.fields['student'].queryset = Student.objects.filter(is_hidden=False).order_by('name')
                 else:
                     # Teachers can only deduct coins from their own students
                     # Exclude hidden students from deduct form
-                    self.fields['student'].queryset = Student.objects.filter(teacher=user, is_hidden=False)
+                    # Order students alphabetically by name
+                    self.fields['student'].queryset = Student.objects.filter(teacher=user, is_hidden=False).order_by('name')
             except:
                 # Default: only show students from classes taught by the current teacher
                 # Exclude hidden students from deduct form
-                self.fields['student'].queryset = Student.objects.filter(teacher=user, is_hidden=False)
+                # Order students alphabetically by name
+                self.fields['student'].queryset = Student.objects.filter(teacher=user, is_hidden=False).order_by('name')
 
 class EditTransactionForm(forms.ModelForm):
     class Meta:
@@ -150,13 +153,13 @@ class StudentForm(forms.ModelForm):
         model = Student
         fields = ['name', 'teacher', 'phone_number']
         widgets = {
-            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter student name'}),
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Введите имя ученика'}),
             'teacher': forms.Select(attrs={'class': 'form-control'}),
-            'phone_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter phone number (e.g., +79991234567)'}),
+            'phone_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Введите номер телефона (например, +79991234567)'}),
         }
         labels = {
             'name': 'Имя ученика',
-            'teacher': 'Преподаватель',
+            'teacher': 'Педагог',
             'phone_number': 'Номер телефона',
         }
     
@@ -186,16 +189,16 @@ class StudentEditForm(forms.ModelForm):
         model = Student
         fields = ['name', 'teacher', 'balance', 'phone_number', 'is_active', 'is_hidden']
         widgets = {
-            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter student name'}),
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Введите имя ученика'}),
             'teacher': forms.Select(attrs={'class': 'form-control'}),
             'balance': forms.NumberInput(attrs={'class': 'form-control', 'min': 0}),
-            'phone_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter phone number (e.g., +79991234567)'}),
+            'phone_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Введите номер телефона (например, +79991234567)'}),
             'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'is_hidden': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
         labels = {
             'name': 'Имя ученика',
-            'teacher': 'Преподаватель',
+            'teacher': 'Педагог',
             'balance': 'Баланс Айкьюшек',
             'phone_number': 'Номер телефона',
             'is_active': 'Активный ученик',

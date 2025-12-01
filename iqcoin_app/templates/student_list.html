@@ -1,22 +1,22 @@
 {% extends 'base.html' %}
 
-{% block title %}Список студентов{% endblock %}
+{% block title %}Список учеников{% endblock %}
 
 {% block content %}
 <div class="container">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Список студентов</h2>
+        <h2>Список учеников</h2>
         {% if user.userprofile.role == 'teacher' or user.userprofile.role == 'admin' %}
-            <a href="{% url 'student_create' %}" class="btn btn-primary">Добавить студента</a>
+            <a href="{% url 'student_create' %}" class="btn btn-primary">Добавить ученика</a>
         {% endif %}
     </div>
 
     <!-- Search Form -->
-    <form method="get" class="mb-4">
+    <form method="get" class="mb-4" id="search-form">
         <div class="row">
             <div class="col-md-6">
                 <div class="input-group">
-                    <input type="text" class="form-control" name="search" placeholder="Поиск по имени студента, названию группы..." value="{{ search_query }}">
+                    <input type="text" class="form-control" name="search" id="search-input" placeholder="Поиск по имени студента, названию группы..." value="{% if search_query %}{{ search_query }}{% endif %}">
                     <button class="btn btn-outline-secondary" type="submit">Поиск</button>
                 </div>
             </div>
@@ -32,15 +32,15 @@
                         <th>Баланс</th>
                         {% if user.userprofile.role == 'teacher' or user.userprofile.role == 'admin' %}
                             <th>Номер телефона</th>
-                            <th>Преподаватель</th>
+                            <th>Педагог</th>
                             <th>Статус</th>
                             <th>Действия</th>
                         {% endif %}
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="student-table-body">
                     {% for student in students %}
-                    <tr>
+                    <tr class="student-row">
                         <td>{{ student.name }}</td>
                         <td>
                             <span class="iq-coin-badge">{{ student.balance }} IQ</span>
@@ -59,12 +59,12 @@
                             </td>
                             <td>
                                 {% if student.is_active %}
-                                    <span class="status-badge bg-success">Активен</span>
+                                    <span class="status-badge badge bg-success">Активен</span>
                                 {% else %}
-                                    <span class="status-badge bg-secondary">Неактивен</span>
+                                    <span class="status-badge badge bg-secondary">Неактивен</span>
                                 {% endif %}
                                 {% if student.is_hidden %}
-                                    <span class="status-badge bg-secondary">Скрыт</span>
+                                    <span class="status-badge badge bg-secondary">Скрыт</span>
                                 {% endif %}
                             </td>
                             <td>
@@ -81,19 +81,57 @@
         </div>
         
         <div class="alert alert-info">
-            Всего студентов: {{ students|length }}
+            Всего Учеников: <span id="student-count">{{ students|length }}</span>
         </div>
     {% else %}
         <div class="text-center">
-            <h4 class="text-muted">Студенты не найдены</h4>
+            <h4 class="text-muted">Ученики не найдены</h4>
             {% if search_query %}
                 <p>Попробуйте изменить критерии поиска</p>
             {% else %}
                 {% if user.userprofile.role == 'teacher' or user.userprofile.role == 'admin' %}
-                    <a href="{% url 'student_create' %}" class="btn btn-primary">Добавить первого студента</a>
+                    <a href="{% url 'student_create' %}" class="btn btn-primary">Добавить первого ученика</a>
                 {% endif %}
             {% endif %}
         </div>
     {% endif %}
 </div>
+
+<script>
+// Live search functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('search-input');
+    const searchForm = document.getElementById('search-form');
+    const studentRows = document.querySelectorAll('.student-row');
+    const studentCount = document.getElementById('student-count');
+    
+    // Add event listener for input changes
+    searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        
+        // If search term is empty, show all students
+        if (searchTerm === '') {
+            studentRows.forEach(row => {
+                row.style.display = '';
+            });
+            studentCount.textContent = studentRows.length;
+            return;
+        }
+        
+        // Filter students based on search term
+        let visibleCount = 0;
+        studentRows.forEach(row => {
+            const studentName = row.cells[0].textContent.toLowerCase();
+            if (studentName.includes(searchTerm)) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        
+        studentCount.textContent = visibleCount;
+    });
+});
+</script>
 {% endblock %}
