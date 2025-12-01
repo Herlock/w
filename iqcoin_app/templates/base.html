@@ -6,8 +6,12 @@
     <title>{% block title %}IQ Coin System{% endblock %}</title>
     <!-- Favicon -->
     {% load static %}
-    <link rel="icon" type="image/png" href="{% static 'images/PageLogo.png' %}">
+    <link rel="icon" type="image/png" href="{% static 'images/PageLogo.png' %}" sizes="32x32">
+    <link rel="icon" type="image/png" href="{% static 'images/PageLogo.png' %}" sizes="16x16">
     <link rel="shortcut icon" type="image/png" href="{% static 'images/PageLogo.png' %}">
+    <link rel="apple-touch-icon" href="{% static 'images/PageLogo.png' %}">
+    <!-- Fallback for older browsers -->
+    <link rel="icon" href="{% static 'images/PageLogo.png' %}">
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -140,7 +144,7 @@
                                 {% if user.userprofile.role == 'student' and user.userprofile.student %}
                                     <span class="coin-balance">Баланс: {{ user.userprofile.student.balance }} IQ</span>
                                 {% endif %}
-                                Привет, {% if user.userprofile.full_name %} {{ user.userprofile.full_name }}{% endif %}!
+                                Привет, {% if user.userprofile.full_name %} {{ user.userprofile.full_name }} {%else %} ученик! {% endif %}!
                             </span>
                         </li>
                         <li class="nav-item">
