@@ -1,6 +1,6 @@
 from django.contrib.auth.backends import BaseBackend
 from django.contrib.auth.models import User
-from .models import Student
+from .models import Student, UserProfile
 
 class StudentPhoneBackend(BaseBackend):
     """
@@ -8,7 +8,7 @@ class StudentPhoneBackend(BaseBackend):
     Students don't need a password, they just enter their phone number.
     """
     
-    def authenticate(self, request, phone_number=None):
+    def authenticate(self, request, phone_number=None, **kwargs):
         """
         Authenticate a student by phone number.
         Returns a User object if authentication is successful, None otherwise.
@@ -43,14 +43,13 @@ class StudentPhoneBackend(BaseBackend):
                 }
             )
             
-            # Link the student to the user profile if not already linked
-            from .models import UserProfile
+            # Link the student to the user profile
             profile, profile_created = UserProfile.objects.get_or_create(user=user)
-            if not profile.student:
-                profile.student = student
-                # Assign parent role if multiple students share this phone number
-                profile.role = 'parent' if is_parent else 'student'
-                profile.save()
+            # Always ensure the student is linked and role is correctly set
+            profile.student = student
+            # Assign parent role if multiple students share this phone number
+            profile.role = 'parent' if is_parent else 'student'
+            profile.save()
             
             # Store the phone number in the session so we can show all students with this phone
             if request:
