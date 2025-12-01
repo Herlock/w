@@ -11,6 +11,10 @@ from .forms import AwardCoinsForm, DeductCoinsForm, EditTransactionForm, Student
 from .decorators import student_required, teacher_required, admin_required, teacher_or_admin_required, role_required
 
 def user_login(request):
+    # If user is already authenticated, redirect to home page
+    if request.user.is_authenticated:
+        return redirect('home')
+    
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
@@ -50,6 +54,10 @@ def student_login(request):
     Custom login view for students using phone number.
     Students don't need a password, just their phone number.
     """
+    # If user is already authenticated, redirect to home page
+    if request.user.is_authenticated:
+        return redirect('home')
+    
     if request.method == 'POST':
         phone_number = request.POST.get('phone_number', '').strip()
         if phone_number:
