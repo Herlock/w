@@ -3,10 +3,10 @@ from django.contrib.auth.models import User
 
 # Define user roles
 USER_ROLES = (
-    ('student', 'Student'),
-    ('parent', 'Parent'),
-    ('teacher', 'Teacher'),
-    ('admin', 'Admin'),
+    ('student', 'Ученик'),
+    ('parent', 'Родитель'),
+    ('teacher', 'Учитель'),
+    ('admin', 'Администратор'),
 )
 
 class UserProfile(models.Model):
@@ -46,8 +46,8 @@ class Student(models.Model):
 
 class Transaction(models.Model):
     TRANSACTION_TYPES = (
-        ('AWARD', 'Award'),
-        ('DEDUCT', 'Deduction'),
+        ('AWARD', 'Награда'),
+        ('DEDUCT', 'Списание'),
     )
     type = models.CharField(max_length=10, choices=TRANSACTION_TYPES)
     amount = models.IntegerField()

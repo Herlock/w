@@ -1,13 +1,13 @@
 {% extends 'base.html' %}
 
-{% block title %}Student Login - IQ-Coin Tracker{% endblock %}
+{% block title %}Вход для ученика - IQ-Coin Tracker{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-md-6">
         <div class="card">
             <div class="card-header">
-                <h3 class="text-center">Вход ученика</h3>
+                <h3 class="text-center">Вход для ученика</h3>
             </div>
             <div class="card-body">
                 <form method="post">
@@ -15,7 +15,7 @@
                     <div class="mb-3">
                         <label for="phone_number" class="form-label">Номер телефона</label>
                         <input type="text" class="form-control" id="phone_number" name="phone_number" placeholder="Введите ваш номер телефона" required>
-                        <div class="form-text">Введите ваш номер телефона, который был предоставлен учителем</div>
+                        <div class="form-text">Введите ваш номер телефона, который был предоставлен педагогом</div>
                     </div>
                     <div class="d-grid">
                         <button type="submit" class="btn btn-primary">Войти</button>

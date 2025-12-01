@@ -5,13 +5,13 @@
 {% block content %}
 <div class="row">
     <div class="col-md-8">
-        <h2>My Students</h2>
+        <h2>Мои ученики</h2>
         <div class="table-responsive">
             <table class="table table-striped">
                 <thead>
                     <tr>
-                        <th>Student Name</th>
-                        <th>Balance</th>
+                        <th>Имя ученика</th>
+                        <th>Баланс</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -28,7 +28,7 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="2" class="text-center">No students found</td>
+                        <td colspan="2" class="text-center">Ученики не найдены</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -39,13 +39,13 @@
     <div class="col-md-4">
         <h3>Quick Actions</h3>
         <div class="d-grid gap-2">
-            <a href="{% url 'award_coins' %}" class="btn btn-success">Award IQ Coins</a>
-            <a href="{% url 'deduct_coins' %}" class="btn btn-warning">Deduct IQ Coins</a>
-            <a href="{% url 'transaction_history' %}" class="btn btn-info">Transaction History</a>
-            <a href="{% url 'student_list' %}" class="btn btn-primary">Manage Students</a>
+            <a href="{% url 'award_coins' %}" class="btn btn-success">Наградить</a>
+            <a href="{% url 'deduct_coins' %}" class="btn btn-warning">Списать</a>
+            <a href="{% url 'transaction_history' %}" class="btn btn-info">История операций</a>
+            <a href="{% url 'student_list' %}" class="btn btn-primary">Управление учениками</a>
         </div>
         
-        <h4 class="mt-4">Recent Transactions</h4>
+        <h4 class="mt-4">Предыдущие операции</h4>
         <div class="list-group">
             {% for transaction in recent_transactions %}
             <div class="list-group-item {% if transaction.edited %}edited-transaction{% endif %}">
@@ -64,12 +64,12 @@
                     {% endif %}
                 </p>
                 {% if transaction.edited %}
-                <small class="text-muted">Edited</small>
+                <small class="text-muted">Редактировано</small>
                 {% endif %}
             </div>
             {% empty %}
             <div class="list-group-item">
-                <p class="mb-1">No recent transactions</p>
+                <p class="mb-1">Нет предыдущих операций</p>
             </div>
             {% endfor %}
         </div>

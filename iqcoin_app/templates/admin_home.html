@@ -11,7 +11,7 @@
                 <thead>
                     <tr>
                         <th>Имя ученика</th>
-                        <th>Преподаватель</th>
+                        <th>Педагог</th>
                         <th>Баланс</th>
                     </tr>
                 </thead>
@@ -49,12 +49,12 @@
         <div class="d-grid gap-2">
             <a href="{% url 'award_coins' %}" class="btn btn-success">Выдать IQ-коины</a>
             <a href="{% url 'deduct_coins' %}" class="btn btn-warning">Списать IQ-коины</a>
-            <a href="{% url 'transaction_history' %}" class="btn btn-info">История транзакций</a>
+            <a href="{% url 'transaction_history' %}" class="btn btn-info">История операций</a>
             <a href="{% url 'student_list' %}" class="btn btn-primary">Управление учениками</a>
             <a href="{% url 'admin:index' %}" class="btn btn-secondary">Django Admin</a>
         </div>
         
-        <h4 class="mt-4">Недавние транзакции</h4>
+        <h4 class="mt-4">Недавние операции</h4>
         <div class="list-group">
             {% for transaction in recent_transactions %}
             <div class="list-group-item {% if transaction.edited %}edited-transaction{% endif %}">
@@ -78,12 +78,12 @@
                 <p class="mb-1">{{ transaction.comment|truncatewords:5 }}</p>
                 {% endif %}
                 {% if transaction.edited %}
-                <small class="text-muted">Edited</small>
+                <small class="text-muted">Редактировано</small>
                 {% endif %}
             </div>
             {% empty %}
             <div class="list-group-item">
-                <p class="mb-1">Нет недавних транзакций</p>
+                <p class="mb-1">Нет недавних операций</p>
             </div>
             {% endfor %}
         </div>

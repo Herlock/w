@@ -7,9 +7,9 @@
     <div class="col-md-8">
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h4 class="mb-0">Edit Student: {{ student.name }}</h4>
+                <h4 class="mb-0">Редактировать: {{ student.name }}</h4>
                 <a href="{% url 'student_detail' student.id %}" class="btn btn-outline-secondary btn-sm">
-                    View Profile
+                    Просмотр профиля
                 </a>
             </div>
             <div class="card-body">
@@ -27,7 +27,7 @@
                             </div>
                         {% endif %}
                         <div class="form-text">
-                            Update the student's full name.
+                            Обновите полное имя студента.
                         </div>
                     </div>
                     
@@ -42,7 +42,8 @@
                             </div>
                         {% endif %}
                         <div class="form-text">
-                            Phone number for student login. Current: <strong>{{ student.phone_number|default:"Not set" }}</strong>
+                            Номер телефона для входа в аккаунт студента. Текущий: <strong>{{ student.phone_number|default:"Не установлен" }}</strong>
+
                         </div>
                     </div>
                     
@@ -68,7 +69,7 @@
                         </label>
                         <div class="input-group">
                             {{ form.balance }}
-                            <span class="input-group-text">IQ-coins</span>
+                            <span class="input-group-text">IQ-коины</span>
                         </div>
                         {% if form.balance.errors %}
                             <div class="text-danger">
@@ -76,8 +77,8 @@
                             </div>
                         {% endif %}
                         <div class="form-text">
-                            Current balance: <strong>{{ student.balance }} IQ-coins</strong>. 
-                            Changing this will create a transaction record.
+                            Текущий баланс: <strong>{{ student.balance }} IQ-коинов</strong>. 
+                            Изменение этого значения создаст запись о транзакции.
                         </div>
                     </div>
                     
@@ -92,7 +93,7 @@
                             </div>
                         {% endif %}
                         <div class="form-text">
-                            Uncheck to deactivate the student account.
+                            Отмените галочку, чтобы деактивировать учетную запись студента.
                         </div>
                     </div>
                     
@@ -107,7 +108,7 @@
                             </div>
                         {% endif %}
                         <div class="form-text">
-                            Hidden students won't appear on the home page or in award/deduct forms, but will remain visible in student management.
+                            Скрытые студенты не будут видны на главной странице или в формах награждения/списания, но останутся видимыми в управлении студентами.
                         </div>
                     </div>
                     
@@ -134,16 +135,16 @@
                     {% if student.balance != form.initial.balance %}
                         <div class="alert alert-warning">
                             <strong>Balance Change Detected:</strong> 
-                            A transaction record will be created to track this manual balance adjustment.
+                            Создастся запись о транзакции для отслеживания этой ручной корректировки баланса.
                         </div>
                     {% endif %}
                     
                     <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                         <a href="{% url 'student_detail' student.id %}" class="btn btn-secondary">
-                            Cancel
+                            Отмена
                         </a>
                         <button type="submit" class="btn btn-primary">
-                            Save Changes
+                            Сохранить изменения
                         </button>
                     </div>
                 </form>
@@ -153,15 +154,15 @@
         <!-- Quick Actions -->
         <div class="card mt-4">
             <div class="card-header">
-                <h6 class="mb-0">Quick Actions</h6>
+                <h6 class="mb-0">Быстрые действия</h6>
             </div>
             <div class="card-body">
                 <div class="d-grid gap-2 d-md-flex">
                     <a href="{% url 'deduct_coins' %}?student={{ student.id }}" class="btn btn-warning btn-sm">
-                        Deduct Coins
+                        Списать айкьюшки
                     </a>
                     <a href="{% url 'transaction_history' %}?student={{ student.id }}" class="btn btn-info btn-sm">
-                        View Transaction History
+                        Просмотр истории операций
                     </a>
                 </div>
             </div>

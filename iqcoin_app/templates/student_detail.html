@@ -48,7 +48,7 @@
         </div>
         
         <div class="col-md-4">
-            <h3>Последние транзакции</h3>
+            <h3>Последние операции</h3>
             {% if recent_transactions %}
                 <div class="list-group">
                     {% for transaction in recent_transactions %}
@@ -67,7 +67,7 @@
                             </div>
                             <small class="text-muted">
                                 {{ transaction.date|date:"d.m.Y H:i" }}<br>
-                                Преподаватель: 
+                                Педагог: 
                                 {% if transaction.teacher.userprofile.full_name %}
                                     {{ transaction.teacher.userprofile.full_name }}
                                 {% else %}

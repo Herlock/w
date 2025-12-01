@@ -1,12 +1,12 @@
 {% extends 'base.html' %}
 
-{% block title %}Редактировать транзакцию{% endblock %}
+{% block title %}Редактировать операцию{% endblock %}
 
 {% block content %}
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-8">
-            <h2>Редактировать транзакцию</h2>
+            <h2>Редактировать операцию</h2>
             
             <div class="card mb-4">
                 <div class="card-body">
@@ -18,7 +18,7 @@
                         {% endif %}
                     </p>
                     <p><strong>Студент:</strong> {{ transaction.student.name }}</p>
-                    <p><strong>Преподаватель:</strong> 
+                    <p><strong>Педагог:</strong> 
                         {% if transaction.teacher.userprofile.full_name %}
                             {{ transaction.teacher.userprofile.full_name }}
                         {% else %}

@@ -32,7 +32,7 @@ def role_required(allowed_roles):
                 return view_func(request, *args, **kwargs)
             else:
                 # Return forbidden response or redirect to appropriate page
-                return HttpResponseForbidden("You don't have permission to access this page.")
+                return HttpResponseForbidden("У вас нет разрешения на доступ к этой странице.")
         return _wrapped_view
     return decorator
 
