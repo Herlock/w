@@ -20,9 +20,11 @@
                 <dt class="col-sm-4">Преподаватель:</dt>
                 <dd class="col-sm-8"> 
                     {% if student.teacher.userprofile.full_name %}
-                                {{ student.teacher.userprofile.full_name }}
-                            {% else %}
-                                {{ student.teacher.username }}</dd>
+                        {{ student.teacher.userprofile.full_name }}
+                    {% else %}
+                        {{ student.teacher.username }}
+                    {% endif %}
+                </dd>
                 
                 <dt class="col-sm-4">Номер телефона:</dt>
                 <dd class="col-sm-8">{{ student.phone_number|default:"Не указан" }}</dd>
