@@ -115,7 +115,7 @@ class AwardCoinsForm(forms.Form):
 class DeductCoinsForm(forms.Form):
     student = forms.ModelChoiceField(queryset=Student.objects.none(), label="Ученик")
     amount = forms.IntegerField(min_value=1, label="Количество")
-    comment = forms.CharField(widget=forms.Textarea, required=True, label="Комментарий")
+    comment = forms.CharField(widget=forms.Textarea, required=False, label="Комментарий")
     
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
