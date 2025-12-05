@@ -2,7 +2,7 @@ from functools import wraps
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 from django.shortcuts import redirect
-from .models import UserProfile
+from .models import UserProfile, Student
 
 def role_required(allowed_roles):
     """
@@ -16,9 +16,25 @@ def role_required(allowed_roles):
             try:
                 user_profile = request.user.userprofile
             except UserProfile.DoesNotExist:
-                # If no profile exists, create one with appropriate role
+                # Check if this is a student user account (created by the StudentPhoneBackend)
+                if request.user.username.startswith('student_'):
+                    # This is a student user account
+                    # Determine if it's a parent (multiple students with same phone) or student
+                    try:
+                        student = Student.objects.get(id=int(request.user.username.split('_')[1]))
+                        # Count how many students share this phone number
+                        phone_number = student.phone_number
+                        if phone_number:
+                            student_count = Student.objects.filter(phone_number=phone_number, is_active=True).count()
+                            role = 'parent' if student_count > 1 else 'student'
+                        else:
+                            role = 'student'
+                        user_profile = UserProfile.objects.create(user=request.user, role=role, student=student)
+                    except (ValueError, Student.DoesNotExist):
+                        # Fallback to student role if we can't determine
+                        user_profile = UserProfile.objects.create(user=request.user, role='student')
                 # But don't assume it's a teacher - let's check if it's linked to a student
-                if hasattr(request.user, 'student_set') and request.user.student_set.exists():
+                elif hasattr(request.user, 'student_set') and request.user.student_set.exists():
                     # This user is linked to a student, so they should be a student or parent
                     student_count = request.user.student_set.count()
                     role = 'parent' if student_count > 1 else 'student'
@@ -27,12 +43,12 @@ def role_required(allowed_roles):
                     # Default to teacher for staff/admin users
                     user_profile = UserProfile.objects.create(user=request.user, role='teacher')
             
-            # Check if user's role is in allowed roles
+            # Check if user has one of the allowed roles
             if user_profile.role in allowed_roles:
                 return view_func(request, *args, **kwargs)
             else:
-                # Return forbidden response or redirect to appropriate page
-                return HttpResponseForbidden("У вас нет разрешения на доступ к этой странице.")
+                return HttpResponseForbidden("You don't have permission to access this page.")
+        
         return _wrapped_view
     return decorator
 
