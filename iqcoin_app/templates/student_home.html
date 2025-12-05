@@ -10,6 +10,9 @@
             
             <div class="alert alert-info">
                 <strong>Вход по номеру телефона:</strong> {{ phone_number }}
+                {% if is_parent %}
+                    <br><strong>Общий баланс всех учеников:</strong> <span class="iq-coin-badge">{{ total_balance }} IQ</span>
+                {% endif %}
             </div>
             
             <h3>Все ученики под этим номером</h3>

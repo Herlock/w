@@ -126,6 +126,9 @@ def home(request):
                 is_active=True
             ).order_by('name')
             
+            # Calculate total balance for parents
+            total_balance = sum(student.balance for student in students_with_phone)
+            
             # Get all transactions for these students
             recent_transactions = Transaction.objects.filter(
                 student__in=students_with_phone
@@ -136,6 +139,7 @@ def home(request):
                 'recent_transactions': recent_transactions,
                 'phone_number': phone_number,
                 'is_parent': user_profile.role == 'parent',
+                'total_balance': total_balance,
             }
             return render(request, 'student_home.html', context)
     
@@ -383,14 +387,21 @@ def transaction_history(request):
             user_profile = UserProfile.objects.create(user=request.user, role='teacher')
     
     # Role-based access
-    if user_profile.role == 'student':
-        # Students can see transactions for all students with their phone number
+    if user_profile.role in ['student', 'parent']:
+        # Students and parents can see transactions for all students with their phone number
         phone_number = request.session.get('student_phone_number')
+        
+        # If phone number is not in session, try to get it from the student profile
+        if not phone_number and user_profile.student:
+            phone_number = user_profile.student.phone_number
+            # Store it in session for future use
+            if phone_number:
+                request.session['student_phone_number'] = phone_number
+        
         if phone_number:
-            # Get all students with this phone number
+            # Get all students with this phone number (both active and inactive to ensure we catch all transactions)
             students_with_phone = Student.objects.filter(
-                phone_number=phone_number,
-                is_active=True
+                phone_number=phone_number
             )
             transactions = Transaction.objects.filter(student__in=students_with_phone).order_by('-date')
         else:

@@ -144,7 +144,12 @@
                                 {% if user.userprofile.role == 'student' and user.userprofile.student %}
                                     <span class="coin-balance">Баланс: {{ user.userprofile.student.balance }} IQ</span>
                                 {% endif %}
-                                Привет, {% if user.userprofile.full_name %} {{ user.userprofile.full_name }} {%else %} ученик! {% endif %}!
+                               
+                            </span>
+                        </li>
+                        <li class="nav-item">
+                            <span class="nav-link " style="vertical-align: middle;">
+                                Привет, {% if user.userprofile.full_name %} {{ user.userprofile.full_name }} {%else %} ученик {% endif %}!
                             </span>
                         </li>
                         <li class="nav-item">

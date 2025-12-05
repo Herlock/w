@@ -32,7 +32,7 @@
             
             <div class="col-md-4">
                 <div class="input-group">
-                    <input type="text" class="form-control" name="search" placeholder="Поиск по комментариям..." value="{{ search_query }}">
+                    <input type="text" class="form-control" name="search" placeholder="Поиск по комментариям..." value="{{ search_query|default:'' }}">
                     <button class="btn btn-outline-secondary" type="submit">Поиск</button>
                 </div>
             </div>
@@ -111,7 +111,7 @@
         </div>
     {% else %}
         <div class="text-center">
-            <h4 class="text-muted">Операцции не найдены</h4>
+            <h4 class="text-muted">Операции не найдены</h4>
             {% if current_student or current_type or search_query %}
                 <p>Попробуйте изменить критерии фильтрации</p>
             {% endif %}
