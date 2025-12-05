@@ -172,7 +172,13 @@ class StudentForm(forms.ModelForm):
                 user_profile = user.userprofile
                 if user_profile.role == 'admin':
                     # Admins can assign students to any teacher
-                    self.fields['teacher'].queryset = User.objects.filter(userprofile__role__in=['teacher', 'admin'])
+                    teacher_queryset = User.objects.filter(userprofile__role__in=['teacher', 'admin'])
+                    # Update the queryset to show full names
+                    self.fields['teacher'].queryset = teacher_queryset
+                    self.fields['teacher'].choices = [
+                        (teacher.id, teacher.userprofile.full_name if hasattr(teacher, 'userprofile') and teacher.userprofile.full_name else teacher.username)
+                        for teacher in teacher_queryset
+                    ]
                 else:
                     # Teachers can only create students for themselves
                     self.fields['teacher'].queryset = User.objects.filter(id=user.id)
@@ -214,7 +220,13 @@ class StudentEditForm(forms.ModelForm):
                 user_profile = user.userprofile
                 if user_profile.role == 'admin':
                     # Admins can assign students to any teacher
-                    self.fields['teacher'].queryset = User.objects.filter(userprofile__role__in=['teacher', 'admin'])
+                    teacher_queryset = User.objects.filter(userprofile__role__in=['teacher', 'admin'])
+                    # Update the queryset to show full names
+                    self.fields['teacher'].queryset = teacher_queryset
+                    self.fields['teacher'].choices = [
+                        (teacher.id, teacher.userprofile.full_name if hasattr(teacher, 'userprofile') and teacher.userprofile.full_name else teacher.username)
+                        for teacher in teacher_queryset
+                    ]
                 else:
                     # Teachers can only assign to themselves
                     self.fields['teacher'].queryset = User.objects.filter(id=user.id)
