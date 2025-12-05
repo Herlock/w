@@ -312,7 +312,42 @@ def deduct_coins(request):
     else:
         form = DeductCoinsForm(user=request.user)
     
-    return render(request, 'deduct_coins.html', {'form': form})
+    # Get students for the searchable dropdown
+    try:
+        user_profile = request.user.userprofile
+        if user_profile.role == 'admin':
+            # Admins can deduct coins from all students
+            students = Student.objects.filter(is_hidden=False).select_related('teacher__userprofile').order_by('name')
+        else:
+            # Teachers can only deduct coins from their own students
+            students = Student.objects.filter(teacher=request.user, is_hidden=False).order_by('name')
+    except:
+        # Default: only show students from classes taught by the current teacher
+        students = Student.objects.filter(teacher=request.user, is_hidden=False).order_by('name')
+    
+    # Convert students to JSON-compatible format for JavaScript
+    students_data = []
+    for student in students:
+        # Try to get the teacher's full name, fallback to username
+        if student.teacher:
+            if hasattr(student.teacher, 'userprofile') and student.teacher.userprofile.full_name:
+                teacher_name = student.teacher.userprofile.full_name
+            else:
+                teacher_name = student.teacher.username
+        else:
+            teacher_name = "No Teacher"
+            
+        students_data.append({
+            'id': student.id,
+            'full_name': student.name,
+            'balance': student.balance,
+            'teacher_name': teacher_name
+        })
+    
+    import json
+    students_json = json.dumps(students_data)
+    
+    return render(request, 'deduct_coins.html', {'form': form, 'students_json': students_json})
 
 @login_required
 def transaction_history(request):
