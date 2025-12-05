@@ -5,10 +5,15 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.db.models import Q
 from django.db import transaction as db_transaction
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, HttpResponse
+from django.views.decorators.csrf import csrf_protect
 from .models import Student, Transaction, UserProfile
 from .forms import AwardCoinsForm, DeductCoinsForm, EditTransactionForm, StudentForm, StudentEditForm
 from .decorators import student_required, teacher_required, admin_required, teacher_or_admin_required, role_required
+import logging
+
+# Get logger instance
+logger = logging.getLogger(__name__)
 
 def user_login(request):
     if request.method == 'POST':
@@ -45,6 +50,7 @@ def user_login(request):
             messages.error(request, 'Invalid username or password.')
     return render(request, 'login.html')
 
+@csrf_protect
 def student_login(request):
     """
     Custom login view for students using phone number.
@@ -53,13 +59,17 @@ def student_login(request):
     if request.method == 'POST':
         phone_number = request.POST.get('phone_number', '').strip()
         if phone_number:
-            # Use our custom authentication backend
-            user = authenticate(request, phone_number=phone_number)
-            if user is not None:
-                login(request, user)
-                return redirect('home')  # Will show student home
-            else:
-                messages.error(request, 'Invalid phone number or student not found.')
+            try:
+                # Use our custom authentication backend
+                user = authenticate(request, phone_number=phone_number)
+                if user is not None:
+                    login(request, user)
+                    return redirect('home')  # Will show student home
+                else:
+                    messages.error(request, 'Invalid phone number or student not found.')
+            except Exception as e:
+                logger.error(f"Error during student authentication: {str(e)}")
+                messages.error(request, 'An error occurred during login. Please try again.')
         else:
             messages.error(request, 'Please enter your phone number.')
     
