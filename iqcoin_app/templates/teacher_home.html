@@ -5,7 +5,14 @@
 {% block content %}
 <div class="row">
     <div class="col-md-8">
-        <h2>Мои ученики</h2>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Мои ученики</h2>
+            <!-- Search Form -->
+            <form method="get" class="d-flex" id="search-form">
+                <input type="text" class="form-control me-2" name="search" id="search-input" placeholder="Поиск учеников..." value="{{ search_query|default:'' }}">
+                <button class="btn btn-outline-secondary" type="submit">Поиск</button>
+            </form>
+        </div>
         <div class="table-responsive">
             <table class="table table-striped">
                 <thead>
@@ -16,7 +23,7 @@
                 </thead>
                 <tbody>
                     {% for student in students %}
-                    <tr class="clickable-row" style="cursor: pointer;" onclick="window.location='{% url 'student_detail' student.id %}'">
+                    <tr class="clickable-row student-row" style="cursor: pointer;" onclick="window.location='{% url 'student_detail' student.id %}'">
                         <td>
                             <a href="{% url 'student_detail' student.id %}" class="text-decoration-none">
                                 {{ student.name }}
@@ -61,6 +68,8 @@
                 <p class="mb-1">
                     {% if transaction.comment %}
                         {{ transaction.comment|truncatewords:5 }}
+                    {% else %}
+                        Нет комментария
                     {% endif %}
                 </p>
                 {% if transaction.edited %}
@@ -102,4 +111,38 @@
     color: #dc3545;
 }
 </style>
+
+<script>
+// Live search functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('search-input');
+    const searchForm = document.getElementById('search-form');
+    const studentRows = document.querySelectorAll('.student-row');
+    
+    // Add event listener for input changes
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            
+            // If search term is empty, show all students
+            if (searchTerm === '') {
+                studentRows.forEach(row => {
+                    row.style.display = '';
+                });
+                return;
+            }
+            
+            // Filter students based on search term
+            studentRows.forEach(row => {
+                const studentName = row.cells[0].textContent.toLowerCase();
+                if (studentName.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    }
+});
+</script>
 {% endblock %}

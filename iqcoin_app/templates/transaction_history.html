@@ -88,7 +88,13 @@
                             </td>
                         {% endif %}
                         <td>{{ transaction.date|date:"d.m.Y H:i" }}</td>
-                        <td>{{ transaction.comment|default:"Нет комментария"|truncatewords:5 }}</td>
+                        <td>
+                            {% if transaction.comment %}
+                                {{ transaction.comment|truncatewords:5 }}
+                            {% else %}
+                                Нет комментария
+                            {% endif %}
+                        </td>
                         {% if user.userprofile.role == 'teacher' or user.userprofile.role == 'admin' %}
                             <td>
                                 <a href="{% url 'edit_transaction' transaction.id %}" class="btn btn-sm btn-primary">Редактировать</a>

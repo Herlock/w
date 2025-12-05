@@ -148,6 +148,13 @@ def home(request):
             is_active=True
         ).order_by('name')
         
+        # Add search functionality for teachers
+        search_query = request.GET.get('search')
+        if search_query:
+            students = students.filter(
+                Q(name__icontains=search_query)
+            )
+        
         # Get recent transactions for this teacher
         recent_transactions = Transaction.objects.filter(
             teacher=request.user
@@ -156,6 +163,7 @@ def home(request):
         context = {
             'students': students,
             'recent_transactions': recent_transactions,
+            'search_query': search_query,
         }
         return render(request, 'teacher_home.html', context)
     
@@ -166,12 +174,22 @@ def home(request):
             is_active=True
         ).order_by('teacher__username', 'name')
         
+        # Add search functionality for admins
+        search_query = request.GET.get('search')
+        if search_query:
+            students = students.filter(
+                Q(name__icontains=search_query) |
+                Q(teacher__username__icontains=search_query) |
+                Q(teacher__userprofile__full_name__icontains=search_query)
+            )
+        
         # Get all recent transactions
         recent_transactions = Transaction.objects.all().order_by('-date')[:10]
         
         context = {
             'students': students,
             'recent_transactions': recent_transactions,
+            'search_query': search_query,
         }
         return render(request, 'admin_home.html', context)
     
